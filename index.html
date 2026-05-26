@@ -251,7 +251,7 @@
     </div>
 
     <header>
-        <h1 id="t-main-title">AI 医学影像智能分析系统</h1>
+        <h1 id="t-main-title">AI 医学影像智能 analysis 系统</h1>
         <p id="t-sub-title">疾病精准检测与靶区病变标注演示（骨折检测）</p>
     </header>
 
@@ -303,18 +303,16 @@
                     <span class="result-label" id="t-r3-lbl">智能置信度 (Confidence)：</span> <span id="confidence-score" style="color:var(--danger-color); font-weight:bold;">96.8%</span>
                 </div>
                 <div class="result-item">
-                    <span class="result-label" id="t-r4-lbl">精准位置标注：</span> <span id="t-r4-val">皮质断裂明显，已在左侧窗口完成红色高亮框精准标注</span>
+                    <span class="result-label" id="t-r4-lbl">精准位置标注：</span> <span id="t-r4-val">已在左侧窗口完成红色高亮框精准标注</span>
                 </div>
                 <div class="result-item">
-                    <span class="result-label" id="t-r5-lbl">病变病理特征：</span>
+                    <span class="result-label" id="t-r5-lbl">特定解剖诊断：</span>
                     <ul id="t-r5-val" style="margin: 5px 0 0 20px; padding: 0; font-size: 14px; color: #555;">
-                        <li>骨折类型：完全性/线性骨折</li>
-                        <li>对位情况：轻度移位，断端可见骨质断裂线</li>
-                    </ul>
+                        </ul>
                 </div>
                 <div class="result-item" style="border-left: 4px solid var(--danger-color); background: #fff5f5;">
                     <span class="result-label" style="color:var(--danger-color);" id="t-r6-lbl">临床处理建议：</span>
-                    <p style="margin:5px 0 0 0; font-size:14px; color:#444;" id="t-r6-val">建议及时前往骨科进行手法复位或外固定处理，并结合临床体征进一步随访。</p>
+                    <p style="margin:5px 0 0 0; font-size:14px; color:#444;" id="t-r6-val">加载中...</p>
                 </div>
             </div>
         </div>
@@ -322,7 +320,7 @@
 </div>
 
 <script>
-    // 三语语言包字典
+    // 扩展的多场景三语字典
     const i18n = {
         zh: {
             "t-main-title": "AI 医学影像智能分析系统",
@@ -339,9 +337,21 @@
             "t-r1-lbl": "检测科目：", "t-r1-val": "骨骼 X光 / CT 影像检查",
             "t-r2-lbl": "分析结果：", "t-r2-val": "检测到明显骨折线病变 (Positive)",
             "t-r3-lbl": "智能置信度 (Confidence)：",
-            "t-r4-lbl": "精准位置标注：", "t-r4-val": "皮质断裂明显，已在左侧窗口完成红色高亮框精准标注",
-            "t-r5-lbl": "病变病理特征：", "t-r5-val": "<li>骨折类型：完全性/线性骨折</li><li>对位情况：轻度移位，断端可见骨质断裂线</li>",
-            "t-r6-lbl": "临床处理建议：", "t-r6-val": "建议及时前往骨科进行手法复位或外固定处理，并结合临床体征进一步随访。"
+            "t-r4-lbl": "精准位置标注：", "t-r4-val": "已在左侧窗口完成红色高亮框精准标注",
+            "t-r5-lbl": "特定解剖诊断：",
+            "t-r6-lbl": "临床处理建议：",
+
+            // 场景 1：股骨粗隆间骨折（你指定的要求）
+            "diagnosis-femur": "<li>骨折部位：右侧股骨粗隆间骨质中断</li><li>病变特征：骨质不断，断端错位嵌插</li><li>关节状态：双髋关节在位，关节间隙可</li>",
+            "suggestion-femur": "建议及时前往骨科进行手法复位、牵引或考虑手术内固定处理，并结合临床体征进一步随访。",
+            
+            // 场景 2：桡骨骨折
+            "diagnosis-radius": "<li>骨折部位：左侧桡骨远端</li><li>病变特征：可见明显骨折线，断端向背侧轻度移位</li><li>关节状态：下桡尺关节未见明显脱位</li>",
+            "suggestion-radius": "建议行石膏外固定或结合临床行切开复位内固定术，保持患肢悬吊。 ",
+            
+            // 场景 3：锁骨骨折
+            "diagnosis-clavicle": "<li>骨折部位：右侧锁骨中段</li><li>病变特征：线性骨折，断端对位良好，无明显成角移位</li><li>关节状态：肩关节各骨对位正常</li>",
+            "suggestion-clavicle": "可采用锁骨带/八字绷带外固定，避免患侧上肢负重，定期复查 X 光看骨痂生长情况。"
         },
         en: {
             "t-main-title": "AI Medical Imaging Analysis System",
@@ -358,9 +368,18 @@
             "t-r1-lbl": "Exam Subject: ", "t-r1-val": "Bone X-Ray / CT Imaging Examination",
             "t-r2-lbl": "Analysis Result: ", "t-r2-val": "Obvious fracture line detected (Positive)",
             "t-r3-lbl": "AI Confidence: ",
-            "t-r4-lbl": "Precision Annotation: ", "t-r4-val": "Cortical disruption visible, precision bounding box annotated in red on the left window",
-            "t-r5-lbl": "Pathological Features: ", "t-r5-val": "<li>Fracture Type: Complete / Linear Fracture</li><li>Alignment: Mild displacement, clear fracture line at fragments</li>",
-            "t-r6-lbl": "Clinical Suggestion: ", "t-r6-val": "Orthopedic consultation recommended for reduction or external fixation. Follow up with clinical signs."
+            "t-r4-lbl": "Precision Annotation: ", "t-r4-val": "Precision bounding box annotated in red on the left window",
+            "t-r5-lbl": "Specific Anatomical Diagnosis:",
+            "t-r6-lbl": "Clinical Suggestion: ",
+
+            "diagnosis-femur": "<li>Site: Right femur intertrochanteric area with bone disruption</li><li>Features: Fractured ends are displaced and impacted</li><li>Joints: Both hip joints in place, normal joint space</li>",
+            "suggestion-femur": "Orthopedic consultation recommended for traction, manual reduction, or internal fixation surgery.",
+            
+            "diagnosis-radius": "<li>Site: Left distal radius</li><li>Features: Clear fracture line visible, distal fragment slightly displaced dorsally</li><li>Joints: No obvious dislocation of distal radioulnar joint</li>",
+            "suggestion-radius": "Consider plaster immobilization or open reduction internal fixation based on clinical findings.",
+            
+            "diagnosis-clavicle": "<li>Site: Right mid-shaft clavicle</li><li>Features: Linear fracture, alignment is acceptable without significant angulation</li><li>Joints: Shoulder joint alignment appears regular</li>",
+            "suggestion-clavicle": "Can be managed with a figure-of-8 bandage. Avoid weight-bearing on the affected side and follow up regularly."
         },
         ko: {
             "t-main-title": "AI 의료 영상 지능형 분석 시스템",
@@ -377,33 +396,49 @@
             "t-r1-lbl": "검사 과목: ", "t-r1-val": "골격 X-Ray / CT 영상 검사",
             "t-r2-lbl": "분석 결과: ", "t-r2-val": "명확한 골절선 병변 검출 (Positive)",
             "t-r3-lbl": "AI 신뢰도 (Confidence): ",
-            "t-r4-lbl": "정밀 위치 주석: ", "t-r4-val": "피질 연속성 단절이 명확함, 왼쪽 창에 빨간색 하이라이트 박스로 정밀 주석 완료",
-            "t-r5-lbl": "병변 병리 특징: ", "t-r5-val": "<li>골절 유형: 완전성 / 선상 골절</li><li>정렬 상태: 경미한 변위, 골절 단면 간 명확한 골절선 관찰됨</li>",
-            "t-r6-lbl": "임상 권고 사항: ", "t-r6-val": "즉시 정형외과에 내원하여 도수 정복 또는 외고정 처치를 권장하며, 임상 증상과 함께 추적 관찰 요망."
+            "t-r4-lbl": "정밀 위치 주석: ", "t-r4-val": "왼쪽 창에 빨간색 하이라이트 박스로 정밀 주석 완료",
+            "t-r5-lbl": "해부학적 정밀 진단:",
+            "t-r6-lbl": "임상 권고 사항: ",
+
+            "diagnosis-femur": "<li>골절 부위: 우측 대퇴골 전자간 골 조직 단절</li><li>병변 특징: 골절 단단 간 전위 및嵌揷(임팩션) 관찰됨</li><li>관절 상태: 양측 고관절 제자리 정렬, 관절 간격 양호</li>",
+            "suggestion-femur": "정형외과 전문의 지도 하에 도수 정복, 견인 또는 수술적 내고정술을 고려해야 합니다.",
+            
+            "diagnosis-radius": "<li>골절 부위: 좌측 요골 원위부</li><li>병변 특징: 명확한 골절선 관찰, 원위 골편이 배측으로 경미하게 전위됨</li><li>관절 상태: 하요척관절의 명확한 탈구 소견 없음</li>",
+            "suggestion-radius": "석고 고정 또는 임상 소견에 따른 개방형 정복 내고정술을 권장합니다.",
+            
+            "diagnosis-clavicle": "<li>골절 부위: 우측 쇄골 중단부</li><li>병변 특징: 선상 골절, 각형성 전위 없이 정렬 상태 양호함</li><li>관절 상태: 견관절 각 골격 정렬 정상</li>",
+            "suggestion-clavicle": "8자 붕대 고정 처치가 가능하며, 환측 상지 부하를 피하고 정기적인 X-ray 추적 관찰 요망."
         }
     };
 
     let currentLang = 'zh';
+    let currentScenarioId = 'femur'; // 默认场景为股骨
 
-    // 语言切换核心逻辑
+    function populateScenario(lang) {
+        document.getElementById('t-r5-val').innerHTML = i18n[lang][`diagnosis-${currentScenarioId}`];
+        document.getElementById('t-r6-val').innerText = i18n[lang][`suggestion-${currentScenarioId}`];
+    }
+
     function switchLang(lang) {
         currentLang = lang;
         document.querySelectorAll('.lang-btn').forEach(btn => btn.classList.remove('active'));
         event.target.classList.add('active');
 
-        // 更新所有静态文本
         for (let id in i18n[lang]) {
             const el = document.getElementById(id);
             if (el) {
                 if (id.endsWith('-val') && (id === 't-r5-val')) {
-                    el.innerHTML = i18n[lang][id];
+                    // 由场景驱动，跳过
                 } else {
                     el.innerText = i18n[lang][id];
                 }
             }
         }
         
-        // 动态状态占位符文本更新
+        if (document.getElementById('report-content').style.display !== 'none') {
+            populateScenario(lang);
+        }
+        
         const placeholder = document.getElementById('report-placeholder');
         if (placeholder.style.display !== 'none') {
             if (placeholder.innerText.includes('等待') || placeholder.innerText.includes('Awaiting') || placeholder.innerText.includes('기다리는')) {
@@ -466,11 +501,15 @@
         progressArea.style.display = 'none';
         progressFill.style.width = '0%';
         
-        // 显示精确定位的红色呼吸灯边框
         roiOverlay.style.display = 'block';
-        
         reportPlaceholder.style.display = 'none';
         reportContent.style.display = 'block';
+
+        // 每次上传时随机选择一个场景（包含股骨、桡骨、锁骨）
+        const scenarios = ['femur', 'radius', 'clavicle'];
+        currentScenarioId = scenarios[Math.floor(Math.random() * scenarios.length)];
+        
+        populateScenario(currentLang);
         
         const randomConf = (95 + Math.random() * 4).toFixed(1);
         document.getElementById('confidence-score').innerText = randomConf + '%';
