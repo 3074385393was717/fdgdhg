@@ -1,23 +1,11 @@
-<script>
-    // 定义十种骨折类型（请根据您的文件夹内容，将其替换为对应的中英韩名称）
-    const fractureTypes = [
-        "Transverse (横行骨折)", "Oblique (斜行骨折)", "Spiral (螺旋骨折)", 
-        "Comminuted (粉碎性骨折)", "Greenstick (青枝骨折)", "Buckle (隆起骨折)",
-        "Pathologic (病理性骨折)", "Stress (应力性骨折)", "Compression (压缩性骨折)",
-        "Avulsion (撕脱骨折)"
-    ];
-
-    // 模拟AI分析逻辑
-    async function startAnalysis() {
-        // 1. 假设这是调用您的后端模型/HuggingFace API的结果
-        // 这里随机返回一种类型作为演示
-        const resultIndex = Math.floor(Math.random() * fractureTypes.length);
-        const identifiedType = fractureTypes[resultIndex];
-        
-        // 2. 显示结果
-        document.getElementById('resultDisplay').innerText = "检测结果: " + identifiedType;
-        
-        // 3. 在 Canvas 上进行标注 (绘图逻辑同上)
-        drawAnnotation(50, 50, 200, 150); 
-    }
-</script>
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <title>测试页面</title>
+</head>
+<body>
+    <h1>网站运行正常！</h1>
+    <p>如果能看到这段文字，说明环境已通，请开始逐步添加功能。</p>
+</body>
+</html>
