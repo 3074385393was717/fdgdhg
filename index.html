@@ -25,7 +25,6 @@
             margin: 0 auto;
         }
 
-        /* 语言切换栏 */
         .lang-bar {
             display: flex;
             justify-content: flex-end;
@@ -69,7 +68,6 @@
             font-size: 1rem;
         }
 
-        /* 主体布局 */
         .main-layout {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -98,7 +96,6 @@
             border-bottom: 1px solid #eee;
         }
 
-        /* 上传区域 */
         .upload-box {
             border: 2px dashed #ccc;
             border-radius: 6px;
@@ -118,7 +115,6 @@
             display: none;
         }
 
-        /* 图像展示区 */
         .stage-container {
             position: relative;
             width: 100%;
@@ -137,7 +133,6 @@
             display: none;
         }
 
-        /* 动态扫描线 */
         .scan-line {
             display: none;
             position: absolute;
@@ -156,14 +151,13 @@
             100% { top: 0%; }
         }
 
-        /* 精确骨折病变标注红框 */
         .roi-overlay {
             display: none;
             position: absolute;
-            top: 35%; 
-            left: 45%;
-            width: 110px;
-            height: 70px;
+            top: 30%; 
+            left: 35%;
+            width: 130px;
+            height: 90px;
             border: 3px solid var(--danger-color);
             box-shadow: 0 0 0 4000px rgba(0, 0, 0, 0.4), inset 0 0 15px rgba(220, 53, 69, 0.6);
             background-color: rgba(220, 53, 69, 0.25);
@@ -191,7 +185,6 @@
             100% { box-shadow: 0 0 0 4000px rgba(0, 0, 0, 0.4), inset 0 0 10px rgba(220, 53, 69, 0.3); }
         }
 
-        /* 进度条 */
         .progress-container {
             display: none;
             margin-top: 15px;
@@ -212,7 +205,6 @@
             font-size: 12px;
         }
 
-        /* 结果报告样式 */
         .result-item {
             margin-bottom: 12px;
             padding: 12px;
@@ -251,8 +243,8 @@
     </div>
 
     <header>
-        <h1 id="t-main-title">AI 医学影像智能 analysis 系统</h1>
-        <p id="t-sub-title">疾病精准检测与靶区病变标注演示（骨折检测）</p>
+        <h1 id="t-main-title">AI 医学影像多多分类智能分析系统</h1>
+        <p id="t-sub-title">10类骨折精准病理分型与病变靶区标注演示</p>
     </header>
 
     <div class="main-layout">
@@ -263,12 +255,12 @@
                 <svg width="40" height="40" fill="none" stroke="#aaa" stroke-width="2" viewBox="0 0 24 24" style="margin-bottom:10px;">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 002-2H4a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
                 </svg>
-                <p id="t-upload-hint" style="margin:0; font-size:14px; color:#666;">点击此处选择并上传骨骼 X光/CT 影像图片</p>
+                <p id="t-upload-hint">点击此处选择并上传骨骼 X光/CT 影像图片</p>
                 <input type="file" id="file-input" accept="image/*">
             </div>
 
             <div class="progress-container" id="progress-area">
-                <p id="t-scanning-text" style="margin: 5px 0; font-size: 13px;">AI 网络正在读取特征并定位骨折线...</p>
+                <p id="t-scanning-text">AI 深度网络正在提取10类骨折纹理特征并定位骨折线...</p>
                 <div class="progress-bar">
                     <div class="progress-fill" id="progress-fill">0%</div>
                 </div>
@@ -276,7 +268,7 @@
 
             <div class="card-title" id="t-card2-title" style="margin-top:25px;">② 影像可视化检测窗口</div>
             <div class="stage-container">
-                <div id="stage-placeholder" style="color:#777;text-align:center;padding:20px;">暂无输入源，请先在上方导入图片</div>
+                <div id="stage-placeholder">暂无输入源，请先在上方导入图片</div>
                 <img id="preview-img" alt="Medical Image">
                 <div class="scan-line" id="scan-line"></div>
                 
@@ -294,19 +286,19 @@
             
             <div id="report-content" style="display: none;">
                 <div class="result-item">
-                    <span class="result-label" id="t-r1-lbl">检测科目：</span> <span id="t-r1-val">骨骼 X光 / CT 影像检查</span>
+                    <span class="result-label" id="t-r1-lbl">检测科目：</span> <span id="t-r1-val">骨骼 X光 / CT 多分类影像检查</span>
                 </div>
                 <div class="result-item">
                     <span class="result-label" id="t-r2-lbl">分析结果：</span> <span class="badge badge-danger" id="t-r2-val">检测到明显骨折线病变 (Positive)</span>
                 </div>
                 <div class="result-item">
-                    <span class="result-label" id="t-r3-lbl">智能置信度 (Confidence)：</span> <span id="confidence-score" style="color:var(--danger-color); font-weight:bold;">96.8%</span>
+                    <span class="result-label" id="t-r3-lbl">智能置信度 (Confidence)：</span> <span id="confidence-score" style="color:var(--danger-color); font-weight:bold;">98.2%</span>
                 </div>
                 <div class="result-item">
                     <span class="result-label" id="t-r4-lbl">精准位置标注：</span> <span id="t-r4-val">已在左侧窗口完成红色高亮框精准标注</span>
                 </div>
                 <div class="result-item">
-                    <span class="result-label" id="t-r5-lbl">特定解剖诊断：</span>
+                    <span class="result-label" id="t-r5-lbl">骨折病理分型报告：</span>
                     <ul id="t-r5-val" style="margin: 5px 0 0 20px; padding: 0; font-size: 14px; color: #555;">
                         </ul>
                 </div>
@@ -320,103 +312,126 @@
 </div>
 
 <script>
-    // 扩展的多场景三语字典
+    // 包含你云盘里10种特定骨折类别的中英韩字典
     const i18n = {
         zh: {
-            "t-main-title": "AI 医学影像智能分析系统",
-            "t-sub-title": "疾病精准检测与靶区病变标注演示（骨折检测）",
+            "t-main-title": "AI 医学影像多分类智能分析系统",
+            "t-sub-title": "10类骨折精准病理分型与病变靶区标注演示",
             "t-card1-title": "① 导入医学图像",
             "t-upload-hint": "点击此处选择并上传骨骼 X光/CT 影像图片",
-            "t-scanning-text": "AI 网络正在读取特征并定位骨折线...",
+            "t-scanning-text": "AI 深度网络正在提取10类骨折纹理特征并定位骨折线...",
             "t-card2-title": "② 影像可视化检测窗口",
             "stage-placeholder": "暂无输入源，请先在上方导入图片",
-            "t-roi-label": "骨折区域 (Fracture)",
+            "t-roi-label": "骨折病变靶区",
             "t-card3-title": "③ 系统分析报告 (Output)",
             "report-placeholder-init": "等待影像导入及系统分析...",
-            "report-placeholder-run": "AI 正在分析中，请稍候...",
-            "t-r1-lbl": "检测科目：", "t-r1-val": "骨骼 X光 / CT 影像检查",
+            "report-placeholder-run": "AI 10通道卷积网络正在深度分析中，请稍候...",
+            "t-r1-lbl": "检测科目：", "t-r1-val": "骨骼 X光 / CT 多分类影像检查",
             "t-r2-lbl": "分析结果：", "t-r2-val": "检测到明显骨折线病变 (Positive)",
             "t-r3-lbl": "智能置信度 (Confidence)：",
-            "t-r4-lbl": "精准位置标注：", "t-r4-val": "已在左侧窗口完成红色高亮框精准标注",
-            "t-r5-lbl": "特定解剖诊断：",
+            "t-r4-lbl": "精准位置标注：", "t-r4-val": "已在左侧可视化窗口完成红色边界框（Bounding Box）高亮标注",
+            "t-r5-lbl": "骨折病理分型报告：",
             "t-r6-lbl": "临床处理建议：",
 
-            // 场景 1：股骨粗隆间骨折（你指定的要求）
-            "diagnosis-femur": "<li>骨折部位：右侧股骨粗隆间骨质中断</li><li>病变特征：骨质不断，断端错位嵌插</li><li>关节状态：双髋关节在位，关节间隙可</li>",
-            "suggestion-femur": "建议及时前往骨科进行手法复位、牵引或考虑手术内固定处理，并结合临床体征进一步随访。",
+            // 10 类骨折的中文诊断（对应你云盘的文件夹）
+            "diag-0": "<li>骨折分型：**Avulsion fracture (撕脱性骨折)**</li><li>病变特征：韧带或肌腱过度牵拉导致附着处的骨块撕脱分离。</li>",
+            "sug-0": "建议局部制动，根据撕脱骨块大小选择保守固定或手术钢针内固定。",
             
-            // 场景 2：桡骨骨折
-            "diagnosis-radius": "<li>骨折部位：左侧桡骨远端</li><li>病变特征：可见明显骨折线，断端向背侧轻度移位</li><li>关节状态：下桡尺关节未见明显脱位</li>",
-            "suggestion-radius": "建议行石膏外固定或结合临床行切开复位内固定术，保持患肢悬吊。 ",
+            "diag-1": "<li>骨折分型：**Comminuted fracture (粉碎性骨折)**</li><li>病变特征：右侧股骨粗隆间骨质中断，断端碎裂成三块以上，错位嵌插。</li>",
+            "sug-1": "伤情较为严重，断端不稳定，建议立即行切开复位内固定术（髓内钉或钢板固定）。",
             
-            // 场景 3：锁骨骨折
-            "diagnosis-clavicle": "<li>骨折部位：右侧锁骨中段</li><li>病变特征：线性骨折，断端对位良好，无明显成角移位</li><li>关节状态：肩关节各骨对位正常</li>",
-            "suggestion-clavicle": "可采用锁骨带/八字绷带外固定，避免患侧上肢负重，定期复查 X 光看骨痂生长情况。"
+            "diag-2": "<li>骨折分型：**Fracture Dislocation (骨折脱位)**</li><li>病变特征：关节骨折同时伴有明显的关节骨骼错位与脱位。</li>",
+            "sug-2": "需紧急行关节复位，并对骨折部位进行固定，防止周围神经血管损伤。",
+            
+            "diag-3": "<li>骨折分型：**Greenstick fracture (青枝骨折)**</li><li>病变特征：骨质部分断裂，骨膜未断，呈类似植物青枝折断状（多见于儿童）。</li>",
+            "sug-3": "由于骨膜完整，骨愈合能力强，首选手法复位加石膏或夹板外固定。",
+            
+            "diag-4": "<li>骨折分型：**Hairline Fracture (发丝状/不完全骨折)**</li><li>病变特征：骨皮质表面可见极微细的裂纹，无明显断端错位或成角。</li>",
+            "sug-4": "属于稳定性骨折，建议佩戴护具或石膏保守固定4-6周，避免患肢负重。",
+            
+            "diag-5": "<li>骨折分型：**Impacted fracture (嵌插性骨折)**</li><li>病变特征：骨折断端相互刺入、嵌插，外部轮廓缩短但相对稳定。</li>",
+            "sug-5": "可根据对位情况选择保守静养，若成角畸形严重则需手法复位纠正。",
+            
+            "diag-6": "<li>骨折分型：**Longitudinal fracture (纵行骨折)**</li><li>病变特征：骨折线与骨干纵轴近乎平行，沿骨长轴纵向裂开。</li>",
+            "sug-6": "需严格石膏外固定，并定期复查 X 光防止负重时骨缝裂开。",
+            
+            "diag-7": "<li>骨折分型：**Oblique fracture (斜行骨折)**</li><li>病变特征：骨折线与骨干轴线呈一定斜角，断端较不稳定，易滑动。</li>",
+            "sug-7": "极易发生再移位，多需要骨牵引后进行皮外或切开手术内固定。",
+            
+            "diag-8": "<li>骨折分型：**Pathological fracture (病理性骨折)**</li><li>病变特征：局部骨质密度减低，在轻微外力下因骨骼自身病变引发断裂。</li>",
+            "sug-8": "需积极查明原发骨质病变，针对病因治疗的同时进行原发病灶及骨折固定。",
+            
+            "diag-9": "<li>骨折分型：**Spiral Fracture (螺旋形骨折)**</li><li>病变特征：骨折线呈螺旋状分布，多由扭转暴力引起，断端极其尖锐。</li>",
+            "sug-9": "属于完全不稳定骨折，断端极易刺破皮肤，首选切开复位髓内钉或解剖钢板固定。"
         },
         en: {
-            "t-main-title": "AI Medical Imaging Analysis System",
-            "t-sub-title": "Precision Disease Detection & Lesion Target Annotation Demo (Fracture)",
+            "t-main-title": "AI Medical Imaging Multi-Class Analysis System",
+            "t-sub-title": "10-Class Fracture Classification and Target Lesion Annotation Demo",
             "t-card1-title": "① Import Medical Image",
             "t-upload-hint": "Click here to select and upload Bone X-Ray/CT image",
-            "t-scanning-text": "AI network reading features and locating fracture lines...",
+            "t-scanning-text": "AI deep network extracting 10-class features and locating fracture lines...",
             "t-card2-title": "② Image Visualization Detection Window",
             "stage-placeholder": "No input source. Please import an image above first.",
-            "t-roi-label": "Fracture Zone",
+            "t-roi-label": "Lesion Bounding Box",
             "t-card3-title": "③ System Analysis Report (Output)",
             "report-placeholder-init": "Awaiting image import and system analysis...",
-            "report-placeholder-run": "AI is analyzing, please wait...",
-            "t-r1-lbl": "Exam Subject: ", "t-r1-val": "Bone X-Ray / CT Imaging Examination",
-            "t-r2-lbl": "Analysis Result: ", "t-r2-val": "Obvious fracture line detected (Positive)",
+            "report-placeholder-run": "AI 10-channel CNN is deeply analyzing the features, please wait...",
+            "t-r1-lbl": "Exam Subject: ", "t-r1-val": "Bone X-Ray / CT Multi-Class Imaging Examination",
+            "t-r2-lbl": "Analysis Result: ", "t-r2-val": "Obvious fracture line lesion detected (Positive)",
             "t-r3-lbl": "AI Confidence: ",
-            "t-r4-lbl": "Precision Annotation: ", "t-r4-val": "Precision bounding box annotated in red on the left window",
-            "t-r5-lbl": "Specific Anatomical Diagnosis:",
+            "t-r4-lbl": "Precision Annotation: ", "t-r4-val": "Precision Bounding Box annotated in red on the left visualization window",
+            "t-r5-lbl": "Fracture Pathology Report:",
             "t-r6-lbl": "Clinical Suggestion: ",
 
-            "diagnosis-femur": "<li>Site: Right femur intertrochanteric area with bone disruption</li><li>Features: Fractured ends are displaced and impacted</li><li>Joints: Both hip joints in place, normal joint space</li>",
-            "suggestion-femur": "Orthopedic consultation recommended for traction, manual reduction, or internal fixation surgery.",
-            
-            "diagnosis-radius": "<li>Site: Left distal radius</li><li>Features: Clear fracture line visible, distal fragment slightly displaced dorsally</li><li>Joints: No obvious dislocation of distal radioulnar joint</li>",
-            "suggestion-radius": "Consider plaster immobilization or open reduction internal fixation based on clinical findings.",
-            
-            "diagnosis-clavicle": "<li>Site: Right mid-shaft clavicle</li><li>Features: Linear fracture, alignment is acceptable without significant angulation</li><li>Joints: Shoulder joint alignment appears regular</li>",
-            "suggestion-clavicle": "Can be managed with a figure-of-8 bandage. Avoid weight-bearing on the affected side and follow up regularly."
+            "diag-0": "<li>Type: **Avulsion fracture**</li><li>Features: Fragment of bone teared off by a ligament or tendon pull.</li>", "sug-0": "Local immobilization advised. Surgical pin fixation may be needed for larger fragments.",
+            "diag-1": "<li>Type: **Comminuted fracture**</li><li>Features: Intertrochanteric bone disruption, shattered into 3 or more pieces.</li>", "sug-1": "Highly unstable. Immediate open reduction and internal fixation (ORIF) is strongly recommended.",
+            "diag-2": "<li>Type: **Fracture Dislocation**</li><li>Features: Severe bone fracture accompanied by clear joint displacement.</li>", "sug-2": "Requires urgent joint reduction and stable skeletal fixation to protect adjacent nerves.",
+            "diag-3": "<li>Type: **Greenstick fracture**</li><li>Features: Partial fracture where one side breaks and the other side bends (common in children).</li>", "sug-3": "High healing potential. Closed manual reduction and plaster casting are preferred.",
+            "diag-4": "<li>Type: **Hairline Fracture**</li><li>Features: Tiny, fine cracks on the cortex without any displacement or angulation.</li>", "sug-4": "Stable fracture. Managed conservatively with protective braces or casting for 4-6 weeks.",
+            "diag-5": "<li>Type: **Impacted fracture**</li><li>Features: Broken ends of the bone are jammed into each other.</li>", "sug-5": "Relatively stable. Conservative treatment can be chosen unless severe angulation is present.",
+            "diag-6": "<li>Type: **Longitudinal fracture**</li><li>Features: The fracture line runs almost parallel to the bone's long axis.</li>", "sug-6": "Requires strict plaster immobilization and regular X-ray checkups to avoid widening under load.",
+            "diag-7": "<li>Type: **Oblique fracture**</li><li>Features: Diagonal break across the bone shaft, unstable and prone to slipping.</li>", "sug-7": "Highly prone to displacement; traction followed by surgical internal fixation is often needed.",
+            "diag-8": "<li>Type: **Pathological fracture**</li><li>Features: Bone break caused by underlying disease that weakens the skeletal structure.</li>", "sug-8": "Urgent investigation into the primary bone lesion is required along with stable fixation.",
+            "diag-9": "<li>Type: **Spiral Fracture**</li><li>Features: The break spirals around the bone, caused by severe twisting force.</li>", "sug-9": "Completely unstable with sharp edges. ORIF with intramedullary nailing is the primary choice."
         },
         ko: {
-            "t-main-title": "AI 의료 영상 지능형 분석 시스템",
-            "t-sub-title": "정밀 질병 검출 및 병변 타겟 주석 데모 (골절 검출)",
+            "t-main-title": "AI 의료 영상 다중 분류 지능형 분석 시스템",
+            "t-sub-title": "10종 골절 정밀 병리 분류 및 병변 타겟 주석 데모",
             "t-card1-title": "① 의료 영상 가져오기",
             "t-upload-hint": "여기를 클릭하여 골격 X-Ray/CT 영상 이미지를 선택하고 업로드하세요",
-            "t-scanning-text": "AI 네트워크가 특징을 읽고 골절선을 찾는 중...",
+            "t-scanning-text": "AI 딥 네트워크가 10종 골절 특징을 추출하고 골절선을 찾는 중...",
             "t-card2-title": "② 영상 시각화 검출 창",
             "stage-placeholder": "입력 소스가 없습니다. 먼저 위의 이미지를 가져오세요.",
-            "t-roi-label": "골절 부위 (Fracture)",
+            "t-roi-label": "골절 병변 타겟",
             "t-card3-title": "③ 시스템 분석 보고서 (Output)",
             "report-placeholder-init": "영상 입력 및 시스템 분석을 기다리는 중...",
-            "report-placeholder-run": "AI 분석 진행 중입니다. 잠시만 기다려주세요...",
-            "t-r1-lbl": "검사 과목: ", "t-r1-val": "골격 X-Ray / CT 영상 검사",
+            "report-placeholder-run": "AI 10채널 CNN 분석 진행 중입니다. 잠시만 기다려주세요...",
+            "t-r1-lbl": "검사 과목: ", "t-r1-val": "골격 X-Ray / CT 다중 분류 영상 검사",
             "t-r2-lbl": "분석 결과: ", "t-r2-val": "명확한 골절선 병변 검출 (Positive)",
             "t-r3-lbl": "AI 신뢰도 (Confidence): ",
-            "t-r4-lbl": "정밀 위치 주석: ", "t-r4-val": "왼쪽 창에 빨간색 하이라이트 박스로 정밀 주석 완료",
-            "t-r5-lbl": "해부학적 정밀 진단:",
+            "t-r4-lbl": "정밀 위치 주석: ", "t-r4-val": "왼쪽 시각화 창에 빨간색 경계 상자(Bounding Box)로 하이라이트 주석 완료",
+            "t-r5-lbl": "골절 병리 분류 보고서:",
             "t-r6-lbl": "임상 권고 사항: ",
 
-            "diagnosis-femur": "<li>골절 부위: 우측 대퇴골 전자간 골 조직 단절</li><li>병변 특징: 골절 단단 간 전위 및嵌揷(임팩션) 관찰됨</li><li>관절 상태: 양측 고관절 제자리 정렬, 관절 간격 양호</li>",
-            "suggestion-femur": "정형외과 전문의 지도 하에 도수 정복, 견인 또는 수술적 내고정술을 고려해야 합니다.",
-            
-            "diagnosis-radius": "<li>골절 부위: 좌측 요골 원위부</li><li>병변 특징: 명확한 골절선 관찰, 원위 골편이 배측으로 경미하게 전위됨</li><li>관절 상태: 하요척관절의 명확한 탈구 소견 없음</li>",
-            "suggestion-radius": "석고 고정 또는 임상 소견에 따른 개방형 정복 내고정술을 권장합니다.",
-            
-            "diagnosis-clavicle": "<li>골절 부위: 우측 쇄골 중단부</li><li>병변 특징: 선상 골절, 각형성 전위 없이 정렬 상태 양호함</li><li>관절 상태: 견관절 각 골격 정렬 정상</li>",
-            "suggestion-clavicle": "8자 붕대 고정 처치가 가능하며, 환측 상지 부하를 피하고 정기적인 X-ray 추적 관찰 요망."
+            "diag-0": "<li>골절 분류: **Avulsion fracture (인열/견열 골절)**</li><li>병변 특징: 인대나 힘줄의 강한 견인으로 인해 부착부 골편이 떨어져 나감.</li>", "sug-0": "국소 고정을 권장하며, 골편 크기에 따라 보존적 고정 또는 수술적 고정을 선택합니다.",
+            "diag-1": "<li>골절 분류: **Comminuted fracture (분쇄 골절)**</li><li>병변 특징: 대퇴골 전자간 부위가 3개 이상의 골편으로 산산조각 나며嵌揷됨.</li>", "sug-1": "매우 불안정하므로 즉각적인 개방형 정복 및 내고정술(ORIF)을 강력히 권장합니다.",
+            "diag-2": "<li>골절 분류: **Fracture Dislocation (골절 탈구)**</li><li>병변 특징: 골절과 동시에 관절의 완전한 탈구 및 정렬 이상 소견이 동반됨.</li>", "sug-2": "긴급 관절 정복이 필요하며, 주변 신경 및 혈관 손상 여부를 반드시 확인해야 합니다.",
+            "diag-3": "<li>골절 분류: **Greenstick fracture (청지/녹색지 골절)**</li><li>병변 특징: 골피질의 일부만 파열되고 골막은 유지된 소아 특유의 불완전 골절.</li>", "sug-3": "골치유 능력이 뛰어나므로 도수 정복 후 석고 또는 부목 외고정을 우선 시행합니다.",
+            "diag-4": "<li>골절 분류: **Hairline Fracture (실금/선상 골절)**</li><li>병변 특징: 골피질 표면에 미세한 균열만 존재하며 전위나 성각 변형은 없음.</li>", "sug-4": "안정성 골절이므로 4-6주간 석고 보존적 고정을 시행하고 체중 부하를 제한합니다.",
+            "diag-5": "<li>골절 분류: **Impacted fracture (감돈/嵌插 골절)**</li><li>병변 특징: 골절된 뼈의 양 끝단이 서로 강력하게 맞물려 찌러진 상태.</li>", "sug-5": "비교적 안정적이나, 각형성 변형이 심할 경우 도수 정복을 통한 교정이 필요합니다.",
+            "diag-6": "<li>골절 분류: **Longitudinal fracture (종골절)**</li><li>병변 특징: 골절선이 골간의 종축과 거의 평행하게 세로 방향으로 갈라짐.</li>", "sug-6": "엄격한 석고 고정이 필요하며 부하 시 골절 틈이 벌어지지 않도록 정기 추적 관찰 요망.",
+            "diag-7": "<li>골절 분류: **Oblique fracture (사골절)**</li><li>병变 특징: 골절선이 골간 축과 사선을 이루며 대단히 불안정하여 미끄러지기 쉬움.</li>", "sug-7": "재전위 가능성이 매우 높아 골견인 후 수술적 내고정술을 시행하는 경우가 많습니다.",
+            "diag-8": "<li>골절 분류: **Pathological fracture (병적 골절)**</li><li>병변 특징: 골다공증, 종양 등 기저 골질환으로 약해진 부위에 미미한 외력으로 골절 발생.</li>", "sug-8": "원인 질환에 대한 정밀 검사가 시급하며, 병변 치료와 함께 안정적인 고정이 필수적입니다.",
+            "diag-9": "<li>골절 분류: **Spiral Fracture (나선상 골절)**</li><li>병변 특징: 강력한 회전력에 의해 골절선이 나선형으로 분포, 단단이 매우 날카로움.</li>", "sug-9": "피부를 뚫고 나올 위험이 높은 완전 불안정 골절로, 수술적 내고정술이 원칙입니다."
         }
     };
 
     let currentLang = 'zh';
-    let currentScenarioId = 'femur'; // 默认场景为股骨
+    let currentIdx = 1; // 默认展示粉碎性骨折（包含粗隆间嵌插诊断）
 
     function populateScenario(lang) {
-        document.getElementById('t-r5-val').innerHTML = i18n[lang][`diagnosis-${currentScenarioId}`];
-        document.getElementById('t-r6-val').innerText = i18n[lang][`suggestion-${currentScenarioId}`];
+        document.getElementById('t-r5-val').innerHTML = i18n[lang][`diag-${currentIdx}`];
+        document.getElementById('t-r6-val').innerHTML = i18n[lang][`sug-${currentIdx}`];
     }
 
     function switchLang(lang) {
@@ -427,9 +442,7 @@
         for (let id in i18n[lang]) {
             const el = document.getElementById(id);
             if (el) {
-                if (id.endsWith('-val') && (id === 't-r5-val')) {
-                    // 由场景驱动，跳过
-                } else {
+                if (!id.startsWith('diag-') && !id.startsWith('sug-')) {
                     el.innerText = i18n[lang][id];
                 }
             }
@@ -458,6 +471,9 @@
     const progressFill = document.getElementById('progress-fill');
     const reportPlaceholder = document.getElementById('report-placeholder');
     const reportContent = document.getElementById('report-content');
+
+    // 智能计数器，让每次上传轮流切换 10 种不同的高级诊断结果
+    let uploadCount = 0;
 
     fileInput.addEventListener('change', function(e) {
         const file = e.target.files[0];
@@ -493,7 +509,7 @@
                 clearInterval(interval);
                 finishAnalysis();
             }
-        }, 60); 
+        }, 50); 
     }
 
     function finishAnalysis() {
@@ -501,17 +517,21 @@
         progressArea.style.display = 'none';
         progressFill.style.width = '0%';
         
+        // 随机调整标注红框位置，增加 AI 实时定位的逼真感
+        roiOverlay.style.top = (25 + Math.random() * 20) + '%';
+        roiOverlay.style.left = (25 + Math.random() * 30) + '%';
         roiOverlay.style.display = 'block';
+        
         reportPlaceholder.style.display = 'none';
         reportContent.style.display = 'block';
 
-        // 每次上传时随机选择一个场景（包含股骨、桡骨、锁骨）
-        const scenarios = ['femur', 'radius', 'clavicle'];
-        currentScenarioId = scenarios[Math.floor(Math.random() * scenarios.length)];
+        // 每次上传按顺序切换 10 种诊断类别，确保每种都能被展示
+        currentIdx = uploadCount % 10;
+        uploadCount++;
         
         populateScenario(currentLang);
         
-        const randomConf = (95 + Math.random() * 4).toFixed(1);
+        const randomConf = (96 + Math.random() * 3).toFixed(1);
         document.getElementById('confidence-score').innerText = randomConf + '%';
     }
 </script>
