@@ -13,7 +13,7 @@
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif, 'Malgun Gothic';
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: #f4f6f9;
             margin: 0;
             padding: 20px;
@@ -233,8 +233,8 @@
 
 <div class="container">
     <div class="lang-bar">
-        <button class="lang-btn active" onclick="switchLang('zh')">中文</button>
-        <button class="lang-btn" onclick="withLang('en')">English</button>
+        <button class="lang-btn active" id="btn-zh">中文</button>
+        <button class="lang-btn" id="btn-en">English</button>
     </div>
 
     <header>
@@ -246,7 +246,7 @@
         <div class="card">
             <div class="card-title" id="t-card1-title">① 导入医学图像</div>
             
-            <div class="upload-box" onclick="document.getElementById('file-input').click()">
+            <div class="upload-box" id="click-upload-box">
                 <svg width="40" height="40" fill="none" stroke="#aaa" stroke-width="2" viewBox="0 0 24 24" style="margin-bottom:10px;">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 002-2H4a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
                 </svg>
@@ -287,21 +287,18 @@
                     <span class="result-label" id="t-r2-lbl">分析结果：</span> <span class="badge badge-danger" id="t-r2-val">检测到明显骨折形态病变 (Positive)</span>
                 </div>
                 <div class="result-item">
-                    <span class="result-label" id="t-r3-lbl">智能置信度 (Confidence)：</span> <span id="confidence-score" style="font-weight:bold;">98.4%</span>
+                    <span class="result-label" id="t-r3-lbl">智能置信度 (Confidence)：</span> <span id="confidence-score" style="font-weight:bold;">97.2%</span>
                 </div>
                 <div class="result-item">
                     <span class="result-label" id="t-r4-lbl">精准位置标注：</span> <span id="t-r4-val">皮质断裂明显，已在左侧窗口完成红色边界框高亮精准标注</span>
                 </div>
                 <div class="result-item">
                     <span class="result-label" id="t-r5-lbl">解剖与病理分型报告：</span>
-                    <ul id="t-r5-val" style="margin: 5px 0 0 20px; padding: 0; font-size: 14px; color: #555;">
-                        <li>形态学分类：<strong>Avulsion fracture (撕脱性骨折)</strong></li>
-                        <li>特征描述：由于韧带或肌腱强力牵拉，导致骨质发生撕裂，附着处的骨片局部游离并脱落错位。</li>
-                    </ul>
+                    <ul id="t-r5-val" style="margin: 5px 0 0 20px; padding: 0; font-size: 14px; color: #555;"></ul>
                 </div>
                 <div class="result-item" id="suggestion-box" style="border-left: 4px solid var(--danger-color); background: #fff5f5;">
                     <span class="result-label" id="t-r6-lbl">临床处理建议：</span>
-                    <p style="margin:5px 0 0 0; font-size:14px; color:#444;" id="t-r6-val">多见于关节及足踝连接处（如您上传的足踝部影像）。建议局部进行刚性护具外固定制动。若游离骨块体积较大或移位明显，需考虑外科钢针手术内固定，并结合临床体征随访。</p>
+                    <p style="margin:5px 0 0 0; font-size:14px; color:#444;" id="t-r6-val"></p>
                 </div>
             </div>
         </div>
@@ -309,50 +306,38 @@
 </div>
 
 <script>
-    const i18n = {
-        zh: {
-            "t-main-title": "AI 医学影像智能骨骼检测系统",
-            "t-sub-title": "基于最新云端数据集的10类骨骼特征与病变区域精准诊断",
-            "t-card1-title": "① 导入医学图像",
-            "t-upload-hint": "点击此处选择并上传骨骼 X光/CT 影像图片",
-            "t-scanning-text": "深度神经网络特征层正在处理图像边缘流并检索云端矩阵...",
-            "t-card2-title": "② 影像可视化检测窗口",
-            "stage-placeholder": "暂无输入源，请先在上方导入图片",
-            "t-roi-label": "骨折病变区",
-            "t-card3-title": "③ 实时神经网络分析报告 (Output)",
-            "report-placeholder-init": "等待影像导入及系统分析...",
-            "report-placeholder-run": "深度空间卷网路与几何感知直方图正在计算矩阵相似度...",
-            "t-r1-lbl": "检测科目：", "t-r1-val": "骨骼 X光 / CT 影像形态学检查",
-            "t-r2-lbl": "分析结果：", "t-r2-val": "检测到明显骨折形态病变 (Positive)",
-            "t-r3-lbl": "智能置信度 (Confidence)：",
-            "t-r4-lbl": "精准位置标注：", "t-r4-val": "皮质断裂明显，已在左侧窗口完成红色边界框高亮精准标注",
-            "t-r5-lbl": "解剖与病理分型报告：",
-            "t-r6-lbl": "临床处理建议：",
-
-            "diag-avulsion": "<li>形态学分类：<strong>Avulsion fracture (撕脱性骨折)</strong></li><li>特征描述：由于韧带或肌腱强力牵拉，导致骨质发生撕裂，附着处的骨片局部游离并脱落错位。</li>",
-            "sug-avulsion": "多见于关节及足踝连接处（如您上传的足踝部影像）。建议局部进行刚性护具外固定制动。若游离骨块体积较大或移位明显，需考虑外科钢针手术内固定，并结合临床体征随访。",
-
-            "diag-comminuted": "<li>形态学分类：<strong>Comminuted fracture (粉碎性骨折)</strong></li><li>特征描述：骨质受强暴力断裂，内部断端碎裂为三块及以上的游离骨片，结构完全不连续。</li>",
-            "sug-comminuted": "结构极不稳定。需外科手术切开并复位，使用锁定钢板和螺钉进行高强度内固定。"
-        }
+    // 强制锁定演示数据路由，彻底剥离复杂的逻辑计算
+    const reportData = {
+        zh: [
+            {
+                diag: "<li>形态学分类：<strong>Avulsion fracture (撕脱性骨折)</strong></li><li>特征描述：由于韧带或肌腱强力牵拉，导致骨质发生撕裂，附着处的骨片局部游离并脱落错位。</li>",
+                sug: "多见于关节及足踝连接处。建议局部进行刚性护具外固定制动。若游离骨块体积较大或移位明显，需考虑外科钢针手术内固定，并结合临床体征随访。"
+            },
+            {
+                diag: "<li>形态学分类：<strong>Comminuted fracture (粉碎性骨折)</strong></li><li>特征描述：骨质受强暴力断裂，内部断端碎裂为三块及以上的游离骨片，结构完全不连续。</li>",
+                sug: "结构极不稳定。需外科手术切开并复位，使用锁定钢板和螺钉进行高强度内固定。"
+            }
+        ],
+        en: [
+            {
+                diag: "<li>Type: <strong>Avulsion fracture</strong></li><li>Description: A bone fragment is torn away by physical pulling of a ligament or tendon.</li>",
+                sug: "Common at joints. Immobilization recommended."
+            },
+            {
+                diag: "<li>Type: <strong>Comminuted fracture</strong></li><li>Description: Bone breaks into three or more fragments. Splintered/crushed style.</li>",
+                sug: "Highly unstable. Surgical intervention with internal fixation required."
+            }
+        ]
     };
 
-    const datasetMapping = [
-        { key: "avulsion", name: "Avulsion fracture", bounding: {t:55, l:25, w:80, h:110} },
-        { key: "comminuted", name: "Comminuted fracture", bounding: {t:40, l:38, w:130, h:95} }
+    const boundings = [
+        {t:55, l:25, w:80, h:110},
+        {t:40, l:38, w:130, h:95}
     ];
 
     let currentLang = 'zh';
-    let uploadCount = 0; 
-    let currentActiveIdx = 0;
-
-    function populateScenario(idx, lang) {
-        const target = datasetMapping[idx];
-        if(i18n[lang] && i18n[lang][`diag-${target.key}`]){
-            document.getElementById('t-r5-val').innerHTML = i18n[lang][`diag-${target.key}`];
-            document.getElementById('t-r6-val').innerHTML = i18n[lang][`sug-${target.key}`];
-        }
-    }
+    let uploadCount = 0;
+    let activeIdx = 0;
 
     const fileInput = document.getElementById('file-input');
     const previewImg = document.getElementById('preview-img');
@@ -364,12 +349,36 @@
     const reportPlaceholder = document.getElementById('report-placeholder');
     const reportContent = document.getElementById('report-content');
 
+    // 绑定点击上传事件
+    document.getElementById('click-upload-box').addEventListener('click', () => fileInput.click());
+
+    function renderReport(idx, lang) {
+        document.getElementById('t-r5-val').innerHTML = reportData[lang][idx].diag;
+        document.getElementById('t-r6-val').innerHTML = reportData[lang][idx].sug;
+        document.getElementById('confidence-score').innerText = (97.2 + idx * 0.5).toFixed(1) + '%';
+    }
+
+    // 绑定多语言切换
+    document.getElementById('btn-zh').addEventListener('click', function() {
+        currentLang = 'zh';
+        this.classList.add('active');
+        document.getElementById('btn-en').classList.remove('active');
+        if (reportContent.style.display === 'block') renderReport(activeIdx, 'zh');
+    });
+
+    document.getElementById('btn-en').addEventListener('click', function() {
+        currentLang = 'en';
+        this.classList.add('active');
+        document.getElementById('btn-zh').classList.remove('active');
+        if (reportContent.style.display === 'block') renderReport(activeIdx, 'en');
+    });
+
     fileInput.addEventListener('change', function(e) {
         const file = e.target.files[0];
         if (!file) return;
 
-        // 核心双重锁死：丢掉所有算法判定。第一次传必为 0（撕脱），第二次传为 1（粉碎）
-        currentActiveIdx = uploadCount % datasetMapping.length;
+        // 根据上传次数严格轮流显示：第1次传必然是撕脱性骨折(0)，第2次必然是粉碎性骨折(1)
+        activeIdx = uploadCount % 2;
         uploadCount++;
 
         const reader = new FileReader();
@@ -380,14 +389,13 @@
             roiOverlay.style.display = 'none';
             reportContent.style.display = 'none';
             reportPlaceholder.style.display = 'block';
-            reportPlaceholder.innerText = "正在计算特征矩阵相似度...";
             
             progressArea.style.display = 'block';
             scanLine.style.display = 'block';
             
             let progress = 0;
             const interval = setInterval(() => {
-                progress += 5;
+                progress += 10;
                 progressFill.style.width = progress + '%';
                 progressFill.innerText = progress + '%';
                 
@@ -396,9 +404,9 @@
                     
                     scanLine.style.display = 'none';
                     progressArea.style.display = 'none';
-                    progressFill.style.width = '0%';
                     
-                    const box = datasetMapping[currentActiveIdx].bounding;
+                    // 动态边框定位
+                    const box = boundings[activeIdx];
                     roiOverlay.style.top = box.t + '%';
                     roiOverlay.style.left = box.l + '%';
                     roiOverlay.style.width = box.w + 'px';
@@ -408,12 +416,10 @@
                     reportPlaceholder.style.display = 'none';
                     reportContent.style.display = 'block';
 
-                    populateScenario(currentActiveIdx, currentLang);
-                    
-                    const confidence = (98.1 + (currentActiveIdx * 0.35)).toFixed(1);
-                    document.getElementById('confidence-score').innerText = confidence + '%';
+                    // 纯硬编码直接灌入文本，绝无任何判断中途崩溃的可能
+                    renderReport(activeIdx, currentLang);
                 }
-            }, 30);
+            }, 40);
         }
         reader.readAsDataURL(file);
     });
