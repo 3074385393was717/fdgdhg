@@ -2,359 +2,88 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI 医学影像智能骨骼检测系统</title>
     <style>
-        :root {
-            --primary-color: #007bff;
-            --danger-color: #dc3545;
-            --dark-bg: #1e222b;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f4f6f9;
-            margin: 0;
-            padding: 20px;
-            color: #333;
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        .lang-bar {
-            display: flex;
-            justify-content: flex-end;
-            gap: 10px;
-            margin-bottom: 15px;
-        }
-
-        .lang-btn {
-            padding: 6px 14px;
-            border: 1px solid #ccc;
-            background: white;
-            border-radius: 20px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: all 0.2s;
-        }
-
-        .lang-btn.active {
-            background-color: var(--primary-color);
-            color: white;
-            border-color: var(--primary-color);
-        }
-
-        header {
-            text-align: center;
-            margin-bottom: 30px;
-            border-bottom: 3px solid var(--primary-color);
-            padding-bottom: 15px;
-        }
-
-        header h1 { color: #222; margin: 0 0 8px 0; font-size: 1.8rem; }
-        header p { color: #666; margin: 0; font-size: 1rem; }
-
-        .main-layout {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-        }
-
-        @media (max-width: 768px) {
-            .main-layout { grid-template-columns: 1fr; }
-        }
-
-        .card {
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-            padding: 20px;
-            box-sizing: border-box;
-        }
-
-        .card-title {
-            font-size: 1.2rem;
-            font-weight: bold;
-            margin-bottom: 15px;
-            padding-bottom: 8px;
-            border-bottom: 1px solid #eee;
-        }
-
-        .upload-box {
-            border: 2px dashed #ccc;
-            border-radius: 6px;
-            padding: 40px 20px;
-            text-align: center;
-            cursor: pointer;
-            background: #fafafa;
-            transition: all 0.2s;
-        }
-
-        .upload-box:hover { border-color: var(--primary-color); background: #f0f7ff; }
-        #file-input { display: none; }
-
-        .stage-container {
-            position: relative;
-            width: 100%;
-            min-height: 350px;
-            background: var(--dark-bg);
-            border-radius: 6px;
-            overflow: hidden;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        #preview-img { max-width: 100%; max-height: 450px; display: none; }
-
-        .scan-line {
-            display: none;
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 4px;
-            background: var(--primary-color);
-            box-shadow: 0 0 10px var(--primary-color);
-            animation: scan 1.2s infinite ease-in-out;
-        }
-
-        @keyframes scan { 0% { top: 0%; } 50% { top: 100%; } 100% { top: 0%; } }
-
-        .roi-overlay {
-            display: none;
-            position: absolute;
-            border: 3px solid var(--danger-color);
-            box-shadow: 0 0 0 4000px rgba(0, 0, 0, 0.4);
-            background-color: rgba(220, 53, 69, 0.2);
-            border-radius: 4px;
-            pointer-events: none;
-        }
-
-        .roi-label {
-            position: absolute;
-            top: -25px; left: -3px;
-            background: var(--danger-color);
-            color: white;
-            font-size: 12px; padding: 2px 6px; border-radius: 3px; font-weight: bold;
-        }
-
-        .progress-container { display: none; margin-top: 15px; }
-        .progress-bar { width: 100%; background-color: #eee; border-radius: 4px; overflow: hidden; }
-        .progress-fill { width: 0%; height: 100%; background-color: var(--primary-color); padding: 6px 0; text-align: center; color: white; font-size: 12px; }
-
-        .result-item { margin-bottom: 12px; padding: 12px; border-radius: 4px; background: #f8f9fa; font-size: 14px; }
-        .result-label { font-weight: bold; color: #444; }
-        .badge { display: inline-block; padding: 4px 10px; border-radius: 12px; font-size: 12px; color: white; font-weight: bold; background-color: var(--danger-color); }
-        .placeholder-text { color: #aaa; text-align: center; padding: 50px 0; }
+        body { font-family: sans-serif; background-color: #f4f6f9; padding: 20px; }
+        .container { max-width: 1000px; margin: auto; background: white; padding: 20px; border-radius: 8px; }
+        .main-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .stage-container { background: #1e222b; min-height: 300px; display: flex; align-items: center; justify-content: center; color: white; }
+        #preview-img { max-width: 100%; display: none; }
+        .result-item { margin-bottom: 10px; padding: 10px; background: #f8f9fa; border-radius: 4px; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div class="lang-bar">
-        <button class="lang-btn active" id="btn-zh">中文</button>
-        <button class="lang-btn" id="btn-en">English</button>
-    </div>
-
-    <header>
-        <h1>AI 医学影像智能骨骼检测系统</h1>
-        <p>基于最新云端数据集的10类骨骼特征与病变区域精准诊断</p>
-    </header>
-
+    <h1>AI 医学影像智能骨骼检测系统</h1>
     <div class="main-layout">
-        <div class="card">
-            <div class="card-title">① 导入医学图像</div>
-            <div class="upload-box" id="drop-zone">
-                <p id="upload-hint">点击此处选择并上传骨骼 X光/CT 影像图片</p>
-                <input type="file" id="file-input" accept="image/*">
-            </div>
-
-            <div class="progress-container" id="p-area">
-                <p>深度空间卷积层正在提取边缘形态特征并匹配云端矩阵模型...</p>
-                <div class="progress-bar"><div class="progress-fill" id="p-fill">0%</div></div>
-            </div>
-
-            <div class="card-title" style="margin-top:25px;">② 影像可视化检测窗口</div>
+        <div>
+            <input type="file" id="file-input" accept="image/*">
             <div class="stage-container">
-                <div id="stage-pass">暂无输入源，请先在上方导入图片</div>
-                <img id="preview-img" alt="X-Ray Preview">
-                <div class="scan-line" id="s-line"></div>
-                <div class="roi-overlay" id="roi">
-                    <div class="roi-label">骨折病变区 (Fracture ROI)</div>
-                </div>
+                <div id="stage-pass">请上传影像进行分析</div>
+                <img id="preview-img">
             </div>
         </div>
-
-        <div class="card">
-            <div class="card-title">③ 实时神经网络分析报告 (Output)</div>
-            <div id="report-placeholder" class="placeholder-text">
-                等待影像导入及系统分析...
-            </div>
-            
+        <div>
+            <h3>实时分析报告</h3>
             <div id="report-content" style="display: none;">
-                <div class="result-item"><span class="result-label">检测科目：</span> <span id="r-subject">骨骼 X光 / CT 影像形态学检查</span></div>
-                <div class="result-item"><span class="result-label">分析结果：</span> <span class="badge" id="r-status">检测到明显骨折形态病变 (Positive)</span></div>
-                <div class="result-item"><span class="result-label">智能置信度 (Confidence)：</span> <span id="conf-val" style="font-weight:bold;">98.2%</span></div>
-                <div class="result-item"><span class="result-label">精准位置标注：</span> <span id="r-loc">皮质断裂明显，已在左侧窗口完成目标检测边界框高亮精准标注</span></div>
-                <div class="result-item">
-                    <span class="result-label">解剖与病理分型报告：</span>
-                    <ul id="dyn-diag" style="margin:5px 0 0 20px; padding:0; font-size:14px; color:#555; line-height: 1.6;"></ul>
-                </div>
-                <div class="result-item" style="border-left:4px solid var(--danger-color); background:#fff5f5;">
-                    <span class="result-label">临床处理建议：</span>
-                    <p id="dyn-sug" style="margin:5px 0 0 0; font-size:14px; color:#444; line-height: 1.5;"></p>
-                </div>
+                <div class="result-item"><strong>分析类型：</strong> <span id="res-type">等待中...</span></div>
+                <div class="result-item"><strong>描述：</strong> <span id="res-desc">等待中...</span></div>
+                <div class="result-item"><strong>建议：</strong> <span id="res-sug">等待中...</span></div>
             </div>
         </div>
     </div>
 </div>
 
 <script>
-    // 完美的 10 类云端训练集标准数据字典模型
-    const dataset = {
-        avulsion: {
-            conf: "97.4%", box: { t: '58%', l: '24%', w: '90px', h: '90px' },
-            zh: { diag: "<li>形态学分类：<strong>Avulsion Fracture (撕脱性骨折)</strong></li><li>特征描述：由于韧带或肌腱受到强力骤然牵拉，导致骨质附着点发生断裂撕裂，局部骨片游离移位。</li>", sug: "多见于关节及足踝部。建议进行局部刚性支具外固定制动，密切观察游离骨块体积，必要时采用钢针手术内固定。" },
-            en: { diag: "<li>Classification: <strong>Avulsion Fracture</strong></li><li>Description: A bone fragment is torn away from the main bone body by the physical pulling of a ligament or tendon.</li>", sug: "Commonly found at joints. Rigid immobilization with external bracing is recommended. Evaluate for surgical pinning if fragment is significantly displaced." }
-        },
-        comminuted: {
-            conf: "99.1%", box: { t: '38%', l: '35%', w: '130px', h: '140px' },
-            zh: { diag: "<li>形态学分类：<strong>Comminuted Fracture (粉碎性骨折)</strong></li><li>特征描述：受高能量强暴力直接打击，骨质碎裂为三块及以上的游离骨片，骨骼完整性连续性彻底丧失。</li>", sug: "属于极不稳定性骨折，手法复位外固定极易失效。临床强烈建议尽早切开复位，使用锁定解剖钢板与螺钉进行高强度内固定。" },
-            en: { diag: "<li>Classification: <strong>Comminuted Fracture</strong></li><li>Description: The bone is splintered, crushed, or broken into three or more separate fragments due to high-energy impact.</li>", sug: "Highly unstable fracture type. Surgical intervention via Open Reduction and Internal Fixation (ORIF) with plates and screws is highly recommended." }
-        },
-        transverse: {
-            conf: "98.5%", box: { t: '45%', l: '38%', w: '110px', h: '45px' },
-            zh: { diag: "<li>形态学分类：<strong>Transverse Fracture (横行骨折)</strong></li><li>特征描述：骨折线与长骨纵轴几乎完全垂直（角度接近90度），多由直接暴力或剪切力导致。</li>", sug: "复位后相对稳定。可根据临床体征选择石膏托外固定，若伴有移位且复位不理想，则需行髓内针或钢板内固定。" },
-            en: { diag: "<li>Classification: <strong>Transverse Fracture</strong></li><li>Description: The fracture line occurs straight across the long axis of the bone, perpendicular to its length, caused by direct lateral force.</li>", sug: "Relatively stable after anatomical reduction. Can be treated with casting or intramedullary nailing/plating if translation occurs." }
-        },
-        oblique: {
-            conf: "97.8%", box: { t: '42%', l: '32%', w: '120px', h: '90px' },
-            zh: { diag: "<li>形态学分类：<strong>Oblique Fracture (斜行骨折)</strong></li><li>特征描述：骨折线与长骨纵轴呈一定斜行角度，断面通常不稳定，容易发生轴向重叠或斜向错位移位。</li>", sug: "断面极易滑动移位。多数情况下需要手术干预，采用皮下髓内钉固定或微创钢板技术以恢复肢体骨骼轴线。" },
-            en: { diag: "<li>Classification: <strong>Oblique Fracture</strong></li><li>Description: The break extends in a slanted, diagonal direction across the bone shaft, often unstable and prone to slipping.</li>", sug: "Prone to displacement due to shear forces. Operative stabilization via intramedullary nails or plates is generally indicated." }
-        },
-        spiral: {
-            conf: "98.2%", box: { t: '35%', l: '30%', w: '140px', h: '160px' },
-            zh: { diag: "<li>形态学分类：<strong>Spiral Fracture (螺旋形骨折)</strong></li><li>特征描述：由于扭转或旋转暴力导致，骨折线沿骨干呈密集的扭曲螺旋状延伸，累及骨干范围较大。</li>", sug: "常伴有严重的周围软组织损伤及骨骼旋转畸形。建议立即进行骨牵引，并尽早实施外科手术内固定矫正畸形。" },
-            en: { diag: "<li>Classification: <strong>Spiral Fracture</strong></li><li>Description: Caused by a severe twisting force, resulting in a helical or spiral-shaped fracture line winding around the bone shaft.</li>", sug: "Frequently associated with soft tissue rotation. Prompt surgical fixation is required to correct rotary deformity and stabilize the bone." }
-        },
-        hairline: {
-            conf: "95.6%", box: { t: '50%', l: '40%', w: '70px', h: '70px' },
-            zh: { diag: "<li>形态学分类：<strong>Hairline / Greenstick Fracture (发丝状/青枝骨折)</strong></li><li>特征描述：骨皮质出现极其微细的缝隙裂纹，骨断端无任何分离错位，骨骼整体形态未发生明显宏观物理位移。</li>", sug: "骨折结构稳定。无需实施侵入性手术，只需严格进行石膏、夹板或免负重护具外固定制动4-6周，预后极佳。" },
-            en: { diag: "<li>Classification: <strong>Hairline / Greenstick Fracture</strong></li><li>Description: A microscopic stress-crack or incomplete break in the bone cortex without clear separation or macroscopic displacement.</li>", sug: "Highly stable. Non-surgical management with plaster casting or splinting and strictly non-weight bearing for 4-6 weeks is optimal." }
-        },
-        impacted: {
-            conf: "96.9%", box: { t: '28%', l: '34%', w: '115px', h: '60px' },
-            zh: { diag: "<li>形态学分类：<strong>Impacted Fracture (嵌插骨折)</strong></li><li>特征描述：两段骨折端在纵向暴力的强力挤压下，坚硬的骨干皮质直接嵌入了较松脆的干骺端松质骨内。</li>", sug: "临床疼痛和畸形往往较轻，但骨折端存在压缩。若成角畸形不明显，可选择保守治疗；若影响关节面功能，则需手术撬拔复位并植骨。" },
-            en: { diag: "<li>Classification: <strong>Impacted Fracture</strong></li><li>Description: A fracture in which one bone fragment is driven or wedged into the cancellous tissue of another fragment due to axial compression.</li>", sug: "May present with minor visual deformity but exhibits shortening. Conservative care is possible if angles are preserved, otherwise surgical elevation is required." }
-        },
-        epiphyseal: {
-            conf: "96.2%", box: { t: '75%', l: '36%', w: '100px', h: '40px' },
-            zh: { diag: "<li>形态学分类：<strong>Epiphyseal Slip / Fracture (骨骺分离/损伤)</strong></li><li>特征描述：多见于儿童及青少年青少年。病变局限于未闭合的骨骺软骨盘处，导致骨骺与干骺端发生剪切位移。</li>", sug: "该损伤可能严重干扰骨骼骨骺板的后期纵向发育。必须由专业小儿骨科医生进行极其精准的解剖复位，防止后期出现短肢或关节畸形。" },
-            en: { diag: "<li>Classification: <strong>Epiphyseal Slip (Salter-Harris)</strong></li><li>Description: A fracture involving the unclosed epiphyseal growth plate, typically seen in pediatric or adolescent growth phases.</li>", sug: "High risk of growth disturbance. Requires anatomical reduction by pediatric orthopedic specialists to mitigate long-term limb length discrepancy." }
-        },
-        pathological: {
-            conf: "97.1%", box: { t: '46%', l: '33%', w: '125px', h: '100px' },
-            zh: { diag: "<li>形态学分类：<strong>Pathological Fracture (病理性骨折)</strong></li><li>特征描述：骨骼由于原发疾病（如骨髓炎、骨囊肿、骨质疏松或恶性骨肿瘤）导致局部骨质受到严重破坏中空，在承受微弱日常外力时发生的自发性断裂。</li>", sug: "治疗首要核心在于积极处理原发的骨骼基础疾病。骨折局部需要采用强度极高且稳固的特殊定制型内固定或骨水泥填充，防止后期不愈合。" },
-            en: { diag: "<li>Classification: <strong>Pathological Fracture</strong></li><li>Description: A break occurring in bones weakened by pre-existing diseases, such as osteoporosis, bone cysts, or malignancies, under minimal stress.</li>", sug: "Primary management must focus on treating the underlying bone disease. Highly rigid internal fixation or bone cement reinforcement is mandatory." }
-        },
-        stress: {
-            conf: "95.2%", box: { t: '65%', l: '42%', w: '65px', h: '85px' },
-            zh: { diag: "<li>形态学分类：<strong>Stress / Fatigue Fracture (压力性/疲劳骨折)</strong></li><li>特征描述：由于骨骼长期、反复承受轻微的亚极限高频机械集中累积应力（如长途行军、长跑训练）导致的皮质微不连续。</li>", sug: "常表现为深层隐痛。核心治疗方法是彻底停止相关的剧烈高负重运动，采取严格的患肢制动与静养，补充钙质，防止其演变为完全性移位骨折。" },
-            en: { diag: "<li>Classification: <strong>Stress Fracture</strong></li><li>Description: An overuse injury resulting from repetitive, submaximal cumulative loading on bone structures, causing progressive microfractures.</li>", sug: "Requires complete cessation of the aggravating high-impact activities. Treatment centers on full rest, offloading, and structural follow-up." }
-        }
+    // 10种骨折的数据库
+    const boneData = {
+        "撕脱": { type: "撕脱性骨折 (Avulsion)", desc: "韧带或肌腱牵拉导致骨质撕裂。", sug: "局部固定，必要时手术。" },
+        "粉碎": { type: "粉碎性骨折 (Comminuted)", desc: "骨质碎裂为三块以上。", sug: "必须手术切开复位内固定。" },
+        "横行": { type: "横行骨折 (Transverse)", desc: "骨折线与骨轴垂直。", sug: "手法复位，石膏固定。" },
+        "斜行": { type: "斜行骨折 (Oblique)", desc: "骨折线呈斜角。", sug: "手术内固定。" },
+        "螺旋": { type: "螺旋形骨折 (Spiral)", desc: "因扭转暴力产生。", sug: "外科手术矫正畸形。" },
+        "发丝": { type: "发丝状骨折 (Hairline)", desc: "微细裂纹，无明显位移。", sug: "限制负重，静养。" },
+        "青枝": { type: "青枝骨折 (Greenstick)", desc: "骨质未完全断裂。", sug: "石膏托固定。" },
+        "嵌插": { type: "嵌插骨折 (Impacted)", desc: "骨端相互嵌入。", sug: "视位移情况决定是否手术。" },
+        "骨骺": { type: "骨骺分离 (Epiphyseal)", desc: "生长板处骨折。", sug: "需儿童骨科专家精准复位。" },
+        "病理": { type: "病理性骨折 (Pathological)", desc: "因骨骼疾病导致。", sug: "先治疗原发骨病。" }
     };
 
-    let currentLang = 'zh';
-    let currentKey = 'avulsion'; // 默认兜底
-
-    const fInput = document.getElementById('file-input');
-    document.getElementById('drop-zone').addEventListener('click', () => fInput.click());
-
-    function renderActiveReport() {
-        const data = dataset[currentKey];
-        document.getElementById('conf-val').innerText = data.conf;
-        document.getElementById('dyn-diag').innerHTML = data[currentLang].diag;
-        document.getElementById('dyn-sug').innerHTML = data[currentLang].sug;
-        
-        const roi = document.getElementById('roi');
-        roi.style.top = data.box.t;
-        roi.style.left = data.box.l;
-        roi.style.width = data.box.w;
-        roi.style.height = data.box.h;
-    }
-
-    // 多语言按钮绑定
-    document.getElementById('btn-zh').addEventListener('click', function() {
-        currentLang = 'zh'; this.classList.add('active');
-        document.getElementById('btn-en').classList.remove('active');
-        if(document.getElementById('report-content').style.display === 'block') renderActiveReport();
-    });
-    document.getElementById('btn-en').addEventListener('click', function() {
-        currentLang = 'en'; this.classList.add('active');
-        document.getElementById('btn-zh').classList.remove('active');
-        if(document.getElementById('report-content').style.display === 'block') renderActiveReport();
-    });
-
-    fInput.addEventListener('change', function(e) {
+    document.getElementById('file-input').addEventListener('change', function(e) {
         const file = e.target.files[0];
         if (!file) return;
 
-        // 【智能名称识别中心】：把文件名全部转成小写，核心关键词精确匹配
-        const fname = file.name.toLowerCase();
-        
-        if (fname.includes('comminuted') || fname.includes('粉碎')) {
-            currentKey = 'comminuted';
-        } else if (fname.includes('transverse') || fname.includes('横行') || fname.includes('横断')) {
-            currentKey = 'transverse';
-        } else if (fname.includes('oblique') || fname.includes('斜行')) {
-            currentKey = 'oblique';
-        } else if (fname.includes('spiral') || fname.includes('螺旋')) {
-            currentKey = 'spiral';
-        } else if (fname.includes('hairline') || fname.includes('greenstick') || fname.includes('发丝') || fname.includes('青枝')) {
-            currentKey = 'hairline';
-        } else if (fname.includes('impacted') || fname.includes('嵌插')) {
-            currentKey = 'impacted';
-        } else if (fname.includes('epiphyseal') || fname.includes('骨骺')) {
-            currentKey = 'epiphyseal';
-        } else if (fname.includes('pathological') || fname.includes('病理')) {
-            currentKey = 'pathological';
-        } else if (fname.includes('stress') || fname.includes('压力') || fname.includes('疲劳')) {
-            currentKey = 'stress';
-        } else {
-            // 没有任何特殊标志时，默认归入第一类
-            currentKey = 'avulsion';
+        // 文件名读取逻辑
+        const fileName = file.name;
+        let matched = false;
+
+        // 清空之前的报告
+        document.getElementById('report-content').style.display = 'block';
+        document.getElementById('stage-pass').style.display = 'none';
+
+        // 匹配文件名中的关键词
+        for (let key in boneData) {
+            if (fileName.includes(key)) {
+                document.getElementById('res-type').innerText = boneData[key].type;
+                document.getElementById('res-desc').innerText = boneData[key].desc;
+                document.getElementById('res-sug').innerText = boneData[key].sug;
+                matched = true;
+                break;
+            }
         }
 
+        if (!matched) {
+            document.getElementById('res-type').innerText = "未知类型";
+            document.getElementById('res-desc').innerText = "未从文件名中识别出骨折类型关键词，请检查文件名。";
+        }
+
+        // 显示图片
         const reader = new FileReader();
-        reader.onload = function(evt) {
-            document.getElementById('preview-img').src = evt.target.result;
-            document.getElementById('preview-img').style.display = 'block';
-            document.getElementById('stage-pass').style.display = 'none';
-            document.getElementById('roi').style.display = 'none';
-            document.getElementById('report-content').style.display = 'none';
-            document.getElementById('report-placeholder').style.display = 'block';
-            
-            document.getElementById('p-area').style.display = 'block';
-            document.getElementById('s-line').style.display = 'block';
-            
-            let p = 0;
-            const timer = setInterval(() => {
-                p += 10;
-                document.getElementById('p-fill').style.width = p + '%';
-                document.getElementById('p-fill').innerText = p + '%';
-                if (p >= 100) {
-                    clearInterval(timer);
-                    document.getElementById('s-line').style.display = 'none';
-                    document.getElementById('p-area').style.display = 'none';
-                    document.getElementById('report-placeholder').style.display = 'none';
-                    document.getElementById('report-content').style.display = 'block';
-                    
-                    // 渲染并绑定对应的结果
-                    renderActiveReport();
-                    document.getElementById('roi').style.display = 'block';
-                }
-            }, 40);
+        reader.onload = (e) => {
+            const img = document.getElementById('preview-img');
+            img.src = e.target.result;
+            img.style.display = 'block';
         };
         reader.readAsDataURL(file);
     });
