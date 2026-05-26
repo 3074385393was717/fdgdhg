@@ -1,74 +1,23 @@
-<!DOCTYPE html>
-<html lang="zh">
-<head>
-    <meta charset="UTF-8">
-    <title>骨折影像分析系统</title>
-    <style>
-        body { font-family: Arial, sans-serif; padding: 20px; line-height: 1.6; }
-        .container { max-width: 800px; margin: auto; }
-        #canvas-container { margin-top: 20px; position: relative; border: 2px solid #ccc; display: inline-block; }
-        .result-box { margin-top: 10px; color: red; font-weight: bold; }
-    </style>
-</head>
-<body>
-<div class="container">
-    <h1 id="title">骨折影像辅助分析系统</h1>
-    
-    <select onchange="changeLanguage(this.value)">
-        <option value="zh">中文</option>
-        <option value="en">English</option>
-        <option value="ko">한국어</option>
-    </select>
-
-    <div style="margin-top: 20px;">
-        <input type="file" id="upload" accept="image/*">
-    </div>
-
-    <div id="canvas-container">
-        <canvas id="canvas"></canvas>
-    </div>
-    <div id="result" class="result-box"></div>
-</div>
-
 <script>
-    // 多语言数据
-    const i18n = {
-        zh: { title: "骨折影像辅助分析系统", result: "分析结果: " },
-        en: { title: "Fracture Analysis System", result: "Analysis Result: " },
-        ko: { title: "골절 영상 분석 시스템", result: "분석 결과: " }
-    };
+    // 定义十种骨折类型（请根据您的文件夹内容，将其替换为对应的中英韩名称）
+    const fractureTypes = [
+        "Transverse (横行骨折)", "Oblique (斜行骨折)", "Spiral (螺旋骨折)", 
+        "Comminuted (粉碎性骨折)", "Greenstick (青枝骨折)", "Buckle (隆起骨折)",
+        "Pathologic (病理性骨折)", "Stress (应力性骨折)", "Compression (压缩性骨折)",
+        "Avulsion (撕脱骨折)"
+    ];
 
-    function changeLanguage(lang) {
-        document.getElementById('title').innerText = i18n[lang].title;
+    // 模拟AI分析逻辑
+    async function startAnalysis() {
+        // 1. 假设这是调用您的后端模型/HuggingFace API的结果
+        // 这里随机返回一种类型作为演示
+        const resultIndex = Math.floor(Math.random() * fractureTypes.length);
+        const identifiedType = fractureTypes[resultIndex];
+        
+        // 2. 显示结果
+        document.getElementById('resultDisplay').innerText = "检测结果: " + identifiedType;
+        
+        // 3. 在 Canvas 上进行标注 (绘图逻辑同上)
+        drawAnnotation(50, 50, 200, 150); 
     }
-
-    // 图片上传与识别逻辑
-    document.getElementById('upload').addEventListener('change', function(e) {
-        const file = e.target.files[0];
-        const reader = new FileReader();
-        const canvas = document.getElementById('canvas');
-        const ctx = canvas.getContext('2d');
-
-        reader.onload = function(event) {
-            const img = new Image();
-            img.onload = function() {
-                canvas.width = img.width;
-                canvas.height = img.height;
-                ctx.drawImage(img, 0, 0);
-                
-                // --- 这里是模拟的AI分析过程 ---
-                // 实际开发中，应将图片传给后端API，后端返回骨折类型和坐标
-                setTimeout(() => {
-                    ctx.strokeStyle = "red";
-                    ctx.lineWidth = 5;
-                    ctx.strokeRect(50, 50, 150, 100); // 模拟红色边框标注
-                    document.getElementById('result').innerText = "检测结果: 横行骨折 (Type: Transverse Fracture)";
-                }, 1000);
-            }
-            img.src = event.target.result;
-        }
-        reader.readAsDataURL(file);
-    });
 </script>
-</body>
-</html>
