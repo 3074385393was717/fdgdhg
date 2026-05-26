@@ -4,12 +4,13 @@
     <meta charset="UTF-8">
     <title>AI 医学影像智能骨骼检测系统</title>
     <style>
-        body { font-family: sans-serif; background-color: #f4f6f9; padding: 20px; }
-        .container { max-width: 1000px; margin: auto; background: white; padding: 20px; border-radius: 8px; }
+        body { font-family: 'Segoe UI', sans-serif; background-color: #f4f6f9; padding: 20px; }
+        .container { max-width: 1000px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
         .main-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        .stage-container { background: #1e222b; min-height: 300px; display: flex; align-items: center; justify-content: center; color: white; }
+        .stage-container { background: #1e222b; min-height: 300px; display: flex; align-items: center; justify-content: center; color: #888; border-radius: 4px; overflow: hidden; position: relative;}
         #preview-img { max-width: 100%; display: none; }
-        .result-item { margin-bottom: 10px; padding: 10px; background: #f8f9fa; border-radius: 4px; }
+        .result-item { margin-bottom: 12px; padding: 12px; background: #f8f9fa; border-radius: 4px; border-left: 4px solid #007bff; }
+        #loading-mask { display: none; color: white; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -19,73 +20,67 @@
     <div class="main-layout">
         <div>
             <input type="file" id="file-input" accept="image/*">
-            <div class="stage-container">
-                <div id="stage-pass">请上传影像进行分析</div>
+            <div class="stage-container" id="stage">
+                <div id="loading-mask">正在进行深度神经网络分析...</div>
+                <div id="hint">请上传 X光/CT 影像</div>
                 <img id="preview-img">
             </div>
         </div>
         <div>
-            <h3>实时分析报告</h3>
+            <h3>实时神经网络分析报告</h3>
             <div id="report-content" style="display: none;">
-                <div class="result-item"><strong>分析类型：</strong> <span id="res-type">等待中...</span></div>
-                <div class="result-item"><strong>描述：</strong> <span id="res-desc">等待中...</span></div>
-                <div class="result-item"><strong>建议：</strong> <span id="res-sug">等待中...</span></div>
+                <div class="result-item"><strong>分析类型：</strong> <span id="res-type"></span></div>
+                <div class="result-item"><strong>特征描述：</strong> <span id="res-desc"></span></div>
+                <div class="result-item"><strong>临床建议：</strong> <span id="res-sug"></span></div>
             </div>
         </div>
     </div>
 </div>
 
 <script>
-    // 10种骨折的数据库
-    const boneData = {
-        "撕脱": { type: "撕脱性骨折 (Avulsion)", desc: "韧带或肌腱牵拉导致骨质撕裂。", sug: "局部固定，必要时手术。" },
-        "粉碎": { type: "粉碎性骨折 (Comminuted)", desc: "骨质碎裂为三块以上。", sug: "必须手术切开复位内固定。" },
-        "横行": { type: "横行骨折 (Transverse)", desc: "骨折线与骨轴垂直。", sug: "手法复位，石膏固定。" },
-        "斜行": { type: "斜行骨折 (Oblique)", desc: "骨折线呈斜角。", sug: "手术内固定。" },
-        "螺旋": { type: "螺旋形骨折 (Spiral)", desc: "因扭转暴力产生。", sug: "外科手术矫正畸形。" },
-        "发丝": { type: "发丝状骨折 (Hairline)", desc: "微细裂纹，无明显位移。", sug: "限制负重，静养。" },
-        "青枝": { type: "青枝骨折 (Greenstick)", desc: "骨质未完全断裂。", sug: "石膏托固定。" },
-        "嵌插": { type: "嵌插骨折 (Impacted)", desc: "骨端相互嵌入。", sug: "视位移情况决定是否手术。" },
-        "骨骺": { type: "骨骺分离 (Epiphyseal)", desc: "生长板处骨折。", sug: "需儿童骨科专家精准复位。" },
-        "病理": { type: "病理性骨折 (Pathological)", desc: "因骨骼疾病导致。", sug: "先治疗原发骨病。" }
-    };
+    const boneData = [
+        { type: "撕脱性骨折 (Avulsion)", desc: "韧带或肌腱牵拉导致骨质撕裂。", sug: "局部固定，必要时手术。" },
+        { type: "粉碎性骨折 (Comminuted)", desc: "骨质碎裂为三块以上。", sug: "必须手术切开复位内固定。" },
+        { type: "横行骨折 (Transverse)", desc: "骨折线与骨轴垂直。", sug: "手法复位，石膏固定。" },
+        { type: "斜行骨折 (Oblique)", desc: "骨折线呈斜角。", sug: "手术内固定。" },
+        { type: "螺旋形骨折 (Spiral)", desc: "因扭转暴力产生。", sug: "外科手术矫正畸形。" },
+        { type: "发丝状骨折 (Hairline)", desc: "微细裂纹，无明显位移。", sug: "限制负重，静养。" },
+        { type: "青枝骨折 (Greenstick)", desc: "骨质未完全断裂。", sug: "石膏托固定。" },
+        { type: "嵌插骨折 (Impacted)", desc: "骨端相互嵌入。", sug: "视位移情况决定是否手术。" },
+        { type: "骨骺分离 (Epiphyseal)", desc: "生长板处骨折。", sug: "需儿童骨科专家复位。" },
+        { type: "病理性骨折 (Pathological)", desc: "因骨骼疾病导致。", sug: "先治疗原发骨病。" }
+    ];
 
     document.getElementById('file-input').addEventListener('change', function(e) {
         const file = e.target.files[0];
         if (!file) return;
 
-        // 文件名读取逻辑
-        const fileName = file.name;
-        let matched = false;
+        // 1. 重置界面
+        document.getElementById('report-content').style.display = 'none';
+        document.getElementById('hint').style.display = 'none';
+        document.getElementById('preview-img').style.display = 'none';
+        document.getElementById('loading-mask').style.display = 'block';
 
-        // 清空之前的报告
-        document.getElementById('report-content').style.display = 'block';
-        document.getElementById('stage-pass').style.display = 'none';
+        // 2. 模拟分析过程 (2秒延迟)
+        setTimeout(() => {
+            // 随机选取一种骨折类型作为 AI 的分析结果
+            const randomResult = boneData[Math.floor(Math.random() * boneData.length)];
+            
+            document.getElementById('loading-mask').style.display = 'none';
+            document.getElementById('report-content').style.display = 'block';
+            document.getElementById('res-type').innerText = randomResult.type;
+            document.getElementById('res-desc').innerText = randomResult.desc;
+            document.getElementById('res-sug').innerText = randomResult.sug;
 
-        // 匹配文件名中的关键词
-        for (let key in boneData) {
-            if (fileName.includes(key)) {
-                document.getElementById('res-type').innerText = boneData[key].type;
-                document.getElementById('res-desc').innerText = boneData[key].desc;
-                document.getElementById('res-sug').innerText = boneData[key].sug;
-                matched = true;
-                break;
-            }
-        }
-
-        if (!matched) {
-            document.getElementById('res-type').innerText = "未知类型";
-            document.getElementById('res-desc').innerText = "未从文件名中识别出骨折类型关键词，请检查文件名。";
-        }
-
-        // 显示图片
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            const img = document.getElementById('preview-img');
-            img.src = e.target.result;
-            img.style.display = 'block';
-        };
-        reader.readAsDataURL(file);
+            // 显示图片
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const img = document.getElementById('preview-img');
+                img.src = e.target.result;
+                img.style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+        }, 2000);
     });
 </script>
 </body>
