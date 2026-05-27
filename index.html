@@ -1,75 +1,86 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <title>AI Fracture Analysis System</title>
+    <title>AI 医学影像智能骨骼检测系统</title>
     <style>
-        body { font-family: 'Segoe UI', Arial, sans-serif; background-color: #f4f7f6; padding: 20px; }
-        .container { max-width: 900px; margin: auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #eee; padding-bottom: 15px; }
-        #canvas-container { margin-top: 20px; border: 3px dashed #3498db; display: flex; justify-content: center; background: #eee; }
-        .report-section { margin-top: 20px; padding: 20px; background: #e8f4fd; border-left: 5px solid #3498db; border-radius: 4px; display: none; }
+        body { font-family: 'Segoe UI', sans-serif; background-color: #f4f6f9; padding: 20px; }
+        .container { max-width: 1000px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .main-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .stage-container { background: #1e222b; min-height: 300px; display: flex; align-items: center; justify-content: center; color: #888; border-radius: 4px; overflow: hidden; position: relative;}
+        #preview-img { max-width: 100%; display: none; }
+        .result-item { margin-bottom: 12px; padding: 12px; background: #f8f9fa; border-radius: 4px; border-left: 4px solid #007bff; }
+        #loading-mask { display: none; color: white; font-weight: bold; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div class="header">
-        <h1 id="title">AI Fracture Analysis System</h1>
-        <select id="lang-select" onchange="updateLanguage()">
-            <option value="en" selected>English</option>
-            <option value="zh">中文</option>
-            <option value="ko">한국어</option>
-        </select>
-    </div>
-
-    <input type="file" id="upload" style="margin-top:20px;">
-    
-    <div id="canvas-container">
-        <canvas id="canvas" style="max-width: 100%;"></canvas>
-    </div>
-
-    <div id="report" class="report-section">
-        <h2 id="report-title">Analysis Report</h2>
-        <p><strong>Type:</strong> <span id="res-type">...</span></p>
-        <p><strong>Risk:</strong> <span id="res-risk">...</span></p>
-        <p><strong>Recommendation:</strong> <span id="res-advice">...</span></p>
+    <h1>AI 医学影像智能骨骼检测系统</h1>
+    <div class="main-layout">
+        <div>
+            <input type="file" id="file-input" accept="image/*">
+            <div class="stage-container" id="stage">
+                <div id="loading-mask">正在进行深度神经网络分析...</div>
+                <div id="hint">请上传 X光/CT 影像</div>
+                <img id="preview-img">
+            </div>
+        </div>
+        <div>
+            <h3>实时神经网络分析报告</h3>
+            <div id="report-content" style="display: none;">
+                <div class="result-item"><strong>分析类型：</strong> <span id="res-type"></span></div>
+                <div class="result-item"><strong>特征描述：</strong> <span id="res-desc"></span></div>
+                <div class="result-item"><strong>临床建议：</strong> <span id="res-sug"></span></div>
+            </div>
+        </div>
     </div>
 </div>
 
 <script>
-    const dict = {
-        en: { title: "AI Fracture Analysis System", report: "Analysis Report", type: "Transverse Fracture", risk: "Moderate - Monitor closely", advice: "Consult orthopedic specialist" },
-        zh: { title: "骨折影像分析系统", report: "分析报告", type: "横行骨折", risk: "中度 - 需密切观察", advice: "建议骨科专科就诊" },
-        ko: { title: "골절 영상 분석 시스템", report: "분석 보고서", type: "횡골절", risk: "중등도 - 주의 깊게 관찰", advice: "정형외과 전문의 상담 필요" }
-    };
+    const boneData = [
+        { type: "撕脱性骨折 (Avulsion)", desc: "韧带或肌腱牵拉导致骨质撕裂。", sug: "局部固定，必要时手术。" },
+        { type: "粉碎性骨折 (Comminuted)", desc: "骨质碎裂为三块以上。", sug: "必须手术切开复位内固定。" },
+        { type: "横行骨折 (Transverse)", desc: "骨折线与骨轴垂直。", sug: "手法复位，石膏固定。" },
+        { type: "斜行骨折 (Oblique)", desc: "骨折线呈斜角。", sug: "手术内固定。" },
+        { type: "螺旋形骨折 (Spiral)", desc: "因扭转暴力产生。", sug: "外科手术矫正畸形。" },
+        { type: "发丝状骨折 (Hairline)", desc: "微细裂纹，无明显位移。", sug: "限制负重，静养。" },
+        { type: "青枝骨折 (Greenstick)", desc: "骨质未完全断裂。", sug: "石膏托固定。" },
+        { type: "嵌插骨折 (Impacted)", desc: "骨端相互嵌入。", sug: "视位移情况决定是否手术。" },
+        { type: "骨骺分离 (Epiphyseal)", desc: "生长板处骨折。", sug: "需儿童骨科专家复位。" },
+        { type: "病理性骨折 (Pathological)", desc: "因骨骼疾病导致。", sug: "先治疗原发骨病。" }
+    ];
 
-    function updateLanguage() {
-        const lang = document.getElementById('lang-select').value;
-        document.getElementById('title').innerText = dict[lang].title;
-        document.getElementById('report-title').innerText = dict[lang].report;
-        document.getElementById('res-type').innerText = dict[lang].type;
-        document.getElementById('res-risk').innerText = dict[lang].risk;
-        document.getElementById('res-advice').innerText = dict[lang].advice;
-    }
+    document.getElementById('file-input').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (!file) return;
 
-    document.getElementById('upload').addEventListener('change', function(e) {
-        const reader = new FileReader();
-        reader.onload = function(event) {
-            const img = new Image();
-            img.onload = function() {
-                const canvas = document.getElementById('canvas');
-                canvas.width = img.width; canvas.height = img.height;
-                const ctx = canvas.getContext('2d');
-                ctx.drawImage(img, 0, 0);
-                // 模拟标注
-                ctx.strokeStyle = "red"; ctx.lineWidth = 10;
-                ctx.strokeRect(img.width*0.2, img.height*0.2, img.width*0.6, img.height*0.5);
-                document.getElementById('report').style.display = 'block';
-            }
-            img.src = event.target.result;
-        }
-        reader.readAsDataURL(e.target.files[0]);
+        // 1. 重置界面
+        document.getElementById('report-content').style.display = 'none';
+        document.getElementById('hint').style.display = 'none';
+        document.getElementById('preview-img').style.display = 'none';
+        document.getElementById('loading-mask').style.display = 'block';
+
+        // 2. 模拟分析过程 (2秒延迟)
+        setTimeout(() => {
+            // 随机选取一种骨折类型作为 AI 的分析结果
+            const randomResult = boneData[Math.floor(Math.random() * boneData.length)];
+            
+            document.getElementById('loading-mask').style.display = 'none';
+            document.getElementById('report-content').style.display = 'block';
+            document.getElementById('res-type').innerText = randomResult.type;
+            document.getElementById('res-desc').innerText = randomResult.desc;
+            document.getElementById('res-sug').innerText = randomResult.sug;
+
+            // 显示图片
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const img = document.getElementById('preview-img');
+                img.src = e.target.result;
+                img.style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+        }, 2000);
     });
 </script>
 </body>
