@@ -1,24 +1,76 @@
-<div id="report-section" class="report-box" style="display: none;">
-    <h3>③ Real-time Matrix Analysis Report</h3>
-    <p><strong id="label-exam">Exam Subject:</strong> Bone X-ray / CT Morphological Examination</p>
-    <p><strong id="label-result">Analysis Result:</strong> Positive - Bone fracture detected</p>
-    <p><strong id="label-conf">AI Confidence:</strong> 96.7%</p>
-    <p><strong id="label-report">Anatomical & Pathological Report:</strong> <span id="res-detail">Avulsion fracture</span></p>
-    <p><strong id="label-advice">Clinical Suggestion:</strong> <span id="res-advice">Recommend immobilization and follow-up MRI.</span></p>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>AI Fracture Analysis System</title>
+    <style>
+        body { font-family: 'Segoe UI', Arial, sans-serif; background-color: #f4f7f6; padding: 20px; }
+        .container { max-width: 900px; margin: auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #eee; padding-bottom: 15px; }
+        #canvas-container { margin-top: 20px; border: 3px dashed #3498db; display: flex; justify-content: center; background: #eee; }
+        .report-section { margin-top: 20px; padding: 20px; background: #e8f4fd; border-left: 5px solid #3498db; border-radius: 4px; display: none; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h1 id="title">AI Fracture Analysis System</h1>
+        <select id="lang-select" onchange="updateLanguage()">
+            <option value="en" selected>English</option>
+            <option value="zh">中文</option>
+            <option value="ko">한국어</option>
+        </select>
+    </div>
+
+    <input type="file" id="upload" style="margin-top:20px;">
+    
+    <div id="canvas-container">
+        <canvas id="canvas" style="max-width: 100%;"></canvas>
+    </div>
+
+    <div id="report" class="report-section">
+        <h2 id="report-title">Analysis Report</h2>
+        <p><strong>Type:</strong> <span id="res-type">...</span></p>
+        <p><strong>Risk:</strong> <span id="res-risk">...</span></p>
+        <p><strong>Recommendation:</strong> <span id="res-advice">...</span></p>
+    </div>
 </div>
 
 <script>
-    // 在文件上传处理逻辑中加入显示控制
+    const dict = {
+        en: { title: "AI Fracture Analysis System", report: "Analysis Report", type: "Transverse Fracture", risk: "Moderate - Monitor closely", advice: "Consult orthopedic specialist" },
+        zh: { title: "骨折影像分析系统", report: "分析报告", type: "横行骨折", risk: "中度 - 需密切观察", advice: "建议骨科专科就诊" },
+        ko: { title: "골절 영상 분석 시스템", report: "분석 보고서", type: "횡골절", risk: "중등도 - 주의 깊게 관찰", advice: "정형외과 전문의 상담 필요" }
+    };
+
+    function updateLanguage() {
+        const lang = document.getElementById('lang-select').value;
+        document.getElementById('title').innerText = dict[lang].title;
+        document.getElementById('report-title').innerText = dict[lang].report;
+        document.getElementById('res-type').innerText = dict[lang].type;
+        document.getElementById('res-risk').innerText = dict[lang].risk;
+        document.getElementById('res-advice').innerText = dict[lang].advice;
+    }
+
     document.getElementById('upload').addEventListener('change', function(e) {
-        if (e.target.files && e.target.files[0]) {
-            const reader = new FileReader();
-            reader.onload = function(event) {
-                // ... (图片绘制逻辑保持不变)
-                
-                // --- 关键点：图片上传并处理后，将报告区域显示出来 ---
-                document.getElementById('report-section').style.display = 'block';
+        const reader = new FileReader();
+        reader.onload = function(event) {
+            const img = new Image();
+            img.onload = function() {
+                const canvas = document.getElementById('canvas');
+                canvas.width = img.width; canvas.height = img.height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0);
+                // 模拟标注
+                ctx.strokeStyle = "red"; ctx.lineWidth = 10;
+                ctx.strokeRect(img.width*0.2, img.height*0.2, img.width*0.6, img.height*0.5);
+                document.getElementById('report').style.display = 'block';
             }
-            reader.readAsDataURL(e.target.files[0]);
+            img.src = event.target.result;
         }
+        reader.readAsDataURL(e.target.files[0]);
     });
 </script>
+</body>
+</html>
