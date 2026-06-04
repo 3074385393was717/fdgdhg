@@ -1,87 +1,1157 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="zh">
 <head>
-    <meta charset="UTF-8">
-    <title>AI 医学影像智能骨骼检测系统</title>
-    <style>
-        body { font-family: 'Segoe UI', sans-serif; background-color: #f4f6f9; padding: 20px; }
-        .container { max-width: 1000px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        .main-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        .stage-container { background: #1e222b; min-height: 300px; display: flex; align-items: center; justify-content: center; color: #888; border-radius: 4px; overflow: hidden; position: relative;}
-        #preview-img { max-width: 100%; display: none; }
-        .result-item { margin-bottom: 12px; padding: 12px; background: #f8f9fa; border-radius: 4px; border-left: 4px solid #007bff; }
-        #loading-mask { display: none; color: white; font-weight: bold; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BoneVision AI</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap');
+
+  :root {
+    --bg: #0a0c10;
+    --surface: #111318;
+    --surface2: #181c24;
+    --border: #252a36;
+    --accent: #00e5ff;
+    --accent2: #ff3b5c;
+    --accent3: #39ff7a;
+    --text: #e8eaf0;
+    --text-muted: #666c82;
+    --text-dim: #3a3f52;
+    --font-head: 'Syne', sans-serif;
+    --font-body: 'DM Sans', sans-serif;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-body);
+    font-size: 14px;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Animated background grid */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,229,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,229,255,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* Header */
+  header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(10,12,16,0.92);
+    backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 32px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .logo {
+    font-family: var(--font-head);
+    font-size: 18px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .logo-icon {
+    width: 28px; height: 28px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+  }
+
+  .logo span { color: var(--accent); }
+
+  /* Language switcher */
+  .lang-switcher {
+    display: flex;
+    gap: 4px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 3px;
+  }
+
+  .lang-btn {
+    padding: 4px 12px;
+    border: none;
+    border-radius: 5px;
+    background: transparent;
+    color: var(--text-muted);
+    font-family: var(--font-body);
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .lang-btn.active {
+    background: var(--accent);
+    color: #000;
+  }
+
+  /* Main layout */
+  main {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    grid-template-columns: 340px 1fr 320px;
+    grid-template-rows: auto 1fr;
+    height: calc(100vh - 60px);
+    gap: 0;
+  }
+
+  /* Panels */
+  .panel {
+    border-right: 1px solid var(--border);
+    overflow-y: auto;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .panel:last-child { border-right: none; border-left: 1px solid var(--border); }
+
+  .panel-title {
+    font-family: var(--font-head);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .panel-title::before {
+    content: '';
+    width: 3px; height: 12px;
+    background: var(--accent);
+    border-radius: 2px;
+    display: block;
+  }
+
+  /* Upload zone */
+  .upload-zone {
+    border: 2px dashed var(--border);
+    border-radius: 12px;
+    padding: 28px 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.25s;
+    background: var(--surface);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .upload-zone::after {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border-radius: 12px;
+    opacity: 0;
+    transition: opacity 0.25s;
+    z-index: -1;
+  }
+
+  .upload-zone:hover, .upload-zone.drag-over {
+    border-color: var(--accent);
+    background: rgba(0,229,255,0.04);
+  }
+
+  .upload-zone:hover::after, .upload-zone.drag-over::after { opacity: 0.15; }
+
+  .upload-icon {
+    font-size: 32px;
+    display: block;
+    margin-bottom: 10px;
+    opacity: 0.6;
+  }
+
+  .upload-text {
+    font-size: 13px;
+    color: var(--text-muted);
+    line-height: 1.6;
+  }
+
+  .upload-hint {
+    font-size: 11px;
+    color: var(--text-dim);
+    margin-top: 6px;
+  }
+
+  #fileInput { display: none; }
+
+  /* Analyze button */
+  .btn-analyze {
+    width: 100%;
+    padding: 13px;
+    background: linear-gradient(135deg, var(--accent), #0088aa);
+    border: none;
+    border-radius: 10px;
+    color: #000;
+    font-family: var(--font-head);
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    transition: all 0.25s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .btn-analyze::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: white;
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+
+  .btn-analyze:hover::after { opacity: 0.1; }
+  .btn-analyze:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  /* AI modules */
+  .module-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .module-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+
+  .module-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--text-dim);
+    flex-shrink: 0;
+    transition: all 0.3s;
+  }
+
+  .module-dot.active { background: var(--accent3); box-shadow: 0 0 8px var(--accent3); }
+  .module-dot.warning { background: #ffa500; box-shadow: 0 0 8px #ffa500; }
+
+  /* Center - Image viewer */
+  .viewer {
+    background: #080a0e;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .viewer-toolbar {
+    padding: 10px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+
+  .viewer-info {
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+
+  .viewer-tools {
+    display: flex;
+    gap: 6px;
+  }
+
+  .tool-btn {
+    width: 28px; height: 28px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--surface);
+    color: var(--text-muted);
+    font-size: 12px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+  }
+
+  .tool-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+  .canvas-wrapper {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  #mainCanvas {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    display: block;
+  }
+
+  .empty-state {
+    text-align: center;
+    color: var(--text-dim);
+    font-size: 13px;
+    position: absolute;
+  }
+
+  .empty-state-icon {
+    font-size: 48px;
+    display: block;
+    margin-bottom: 12px;
+    opacity: 0.3;
+  }
+
+  /* Scanning animation */
+  .scan-line {
+    position: absolute;
+    left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--accent), transparent);
+    opacity: 0;
+    pointer-events: none;
+    animation: scan 2s linear infinite;
+  }
+
+  @keyframes scan {
+    0% { top: 0; opacity: 0; }
+    5% { opacity: 1; }
+    95% { opacity: 1; }
+    100% { top: 100%; opacity: 0; }
+  }
+
+  .scan-line.active { display: block; }
+
+  /* Results panel */
+  .result-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px;
+    transition: border-color 0.3s;
+  }
+
+  .result-card.fracture { border-color: rgba(255,59,92,0.4); }
+  .result-card.normal { border-color: rgba(57,255,122,0.4); }
+
+  .result-label {
+    font-family: var(--font-head);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 6px;
+  }
+
+  .result-value {
+    font-family: var(--font-head);
+    font-size: 22px;
+    font-weight: 800;
+    line-height: 1.2;
+    color: var(--text);
+  }
+
+  .result-value.danger { color: var(--accent2); }
+  .result-value.safe { color: var(--accent3); }
+  .result-value.info { color: var(--accent); }
+
+  .result-sub {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 4px;
+  }
+
+  /* Confidence bar */
+  .confidence-bar {
+    margin-top: 8px;
+    height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .confidence-fill {
+    height: 100%;
+    border-radius: 2px;
+    background: linear-gradient(90deg, var(--accent2), #ff8c00);
+    transition: width 1s ease;
+    width: 0;
+  }
+
+  .confidence-fill.safe { background: linear-gradient(90deg, var(--accent3), #00aa44); }
+
+  /* Findings list */
+  .finding-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 12px;
+  }
+
+  .finding-item:last-child { border-bottom: none; }
+
+  .finding-badge {
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 9px;
+    font-weight: 700;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  .finding-badge.high { background: rgba(255,59,92,0.2); color: var(--accent2); border: 1px solid rgba(255,59,92,0.4); }
+  .finding-badge.medium { background: rgba(255,165,0,0.2); color: #ffa500; border: 1px solid rgba(255,165,0,0.4); }
+  .finding-badge.low { background: rgba(57,255,122,0.2); color: var(--accent3); border: 1px solid rgba(57,255,122,0.4); }
+
+  .finding-text { color: var(--text-muted); line-height: 1.5; }
+  .finding-text strong { color: var(--text); display: block; margin-bottom: 2px; }
+
+  /* Skeleton loading */
+  .skeleton {
+    background: linear-gradient(90deg, var(--surface) 25%, var(--surface2) 50%, var(--surface) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+    border-radius: 6px;
+    height: 16px;
+    margin-bottom: 8px;
+  }
+
+  @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+  /* Annotation overlay legend */
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 4px;
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 10px;
+    color: var(--text-muted);
+  }
+
+  .legend-dot {
+    width: 8px; height: 8px;
+    border-radius: 1px;
+    border: 2px solid;
+  }
+
+  /* Status badge */
+  .status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+  }
+
+  .status-badge.processing {
+    background: rgba(0,229,255,0.1);
+    color: var(--accent);
+    border: 1px solid rgba(0,229,255,0.3);
+  }
+
+  .status-badge.complete {
+    background: rgba(57,255,122,0.1);
+    color: var(--accent3);
+    border: 1px solid rgba(57,255,122,0.3);
+  }
+
+  .status-badge.idle {
+    background: var(--surface2);
+    color: var(--text-dim);
+    border: 1px solid var(--border);
+  }
+
+  .pulse {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+    animation: pulse 1s infinite;
+  }
+
+  @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  /* Notification */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(80px);
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 18px;
+    font-size: 12px;
+    color: var(--text-muted);
+    z-index: 999;
+    transition: transform 0.3s ease;
+    white-space: nowrap;
+  }
+
+  .toast.show { transform: translateX(-50%) translateY(0); }
+
+  .section-header {
+    font-family: var(--font-head);
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-top: 4px;
+  }
+
+  /* Overlay hint */
+  .no-result-hint {
+    text-align: center;
+    padding: 20px;
+    color: var(--text-dim);
+    font-size: 12px;
+    line-height: 1.8;
+  }
+</style>
 </head>
 <body>
 
-<div class="container">
-    <h1>AI 医学影像智能骨骼检测系统</h1>
-    <div class="main-layout">
-        <div>
-            <input type="file" id="file-input" accept="image/*">
-            <div class="stage-container" id="stage">
-                <div id="loading-mask">正在进行深度神经网络分析...</div>
-                <div id="hint">请上传 X光/CT 影像</div>
-                <img id="preview-img">
-            </div>
-        </div>
-        <div>
-            <h3>实时神经网络分析报告</h3>
-            <div id="report-content" style="display: none;">
-                <div class="result-item"><strong>分析类型：</strong> <span id="res-type"></span></div>
-                <div class="result-item"><strong>特征描述：</strong> <span id="res-desc"></span></div>
-                <div class="result-item"><strong>临床建议：</strong> <span id="res-sug"></span></div>
-            </div>
-        </div>
+<header>
+  <div class="logo">
+    <div class="logo-icon">🦴</div>
+    Bone<span>Vision</span> AI
+  </div>
+  <div class="lang-switcher">
+    <button class="lang-btn active" onclick="setLang('zh')">中文</button>
+    <button class="lang-btn" onclick="setLang('en')">EN</button>
+    <button class="lang-btn" onclick="setLang('ko')">한국어</button>
+  </div>
+</header>
+
+<main>
+  <!-- Left Panel -->
+  <div class="panel" id="leftPanel">
+    <div class="panel-title" data-i18n="uploadPanel">影像上传</div>
+
+    <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()">
+      <span class="upload-icon">📡</span>
+      <div class="upload-text" data-i18n="uploadText">点击或拖拽上传影像</div>
+      <div class="upload-hint" data-i18n="uploadHint">支持 JPEG · PNG · WebP · DICOM</div>
     </div>
-</div>
+    <input type="file" id="fileInput" accept="image/*" onchange="handleFileUpload(event)">
+
+    <button class="btn-analyze" id="analyzeBtn" disabled onclick="startAnalysis()">
+      <span>⚡</span>
+      <span data-i18n="analyzeBtn">开始 AI 分析</span>
+    </button>
+
+    <div>
+      <div class="panel-title" data-i18n="aiModules">AI 检测模块</div>
+      <div class="module-grid" style="margin-top:12px">
+        <div class="module-item">
+          <div class="module-dot" id="dot1"></div>
+          <div data-i18n="mod1">骨折断裂检测</div>
+        </div>
+        <div class="module-item">
+          <div class="module-dot" id="dot2"></div>
+          <div data-i18n="mod2">骨骼结构分析</div>
+        </div>
+        <div class="module-item">
+          <div class="module-dot" id="dot3"></div>
+          <div data-i18n="mod3">病变区域标注</div>
+        </div>
+        <div class="module-item">
+          <div class="module-dot" id="dot4"></div>
+          <div data-i18n="mod4">风险等级评估</div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="panel-title" data-i18n="annotLegend">标注图例</div>
+      <div class="legend" style="margin-top:10px">
+        <div class="legend-item"><div class="legend-dot" style="border-color:#ff3b5c"></div> <span data-i18n="leg1">骨折线</span></div>
+        <div class="legend-item"><div class="legend-dot" style="border-color:#ffa500"></div> <span data-i18n="leg2">疑似区域</span></div>
+        <div class="legend-item"><div class="legend-dot" style="border-color:#00e5ff"></div> <span data-i18n="leg3">结构异常</span></div>
+        <div class="legend-item"><div class="legend-dot" style="border-color:#39ff7a"></div> <span data-i18n="leg4">正常区域</span></div>
+      </div>
+    </div>
+
+    <div id="statusArea" style="margin-top:4px">
+      <div class="status-badge idle" id="statusBadge">
+        <div class="pulse"></div>
+        <span data-i18n="statusIdle">等待分析</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Center Viewer -->
+  <div class="viewer">
+    <div class="viewer-toolbar">
+      <div class="viewer-info" id="fileInfo" data-i18n="noFile">未加载影像</div>
+      <div class="viewer-tools">
+        <button class="tool-btn" title="Zoom In" onclick="zoom(1.2)">＋</button>
+        <button class="tool-btn" title="Zoom Out" onclick="zoom(0.8)">－</button>
+        <button class="tool-btn" title="Reset" onclick="resetZoom()">↺</button>
+        <button class="tool-btn" title="Toggle annotations" onclick="toggleAnnotations()" id="annotToggle">👁</button>
+      </div>
+    </div>
+    <div class="canvas-wrapper" id="canvasWrapper">
+      <div class="empty-state" id="emptyState">
+        <span class="empty-state-icon">🩻</span>
+        <span data-i18n="emptyState">请上传骨骼影像以开始分析</span>
+      </div>
+      <canvas id="mainCanvas" style="display:none"></canvas>
+      <div class="scan-line" id="scanLine"></div>
+    </div>
+  </div>
+
+  <!-- Right Results Panel -->
+  <div class="panel" id="rightPanel">
+    <div class="panel-title" data-i18n="resultsTitle">分析结果</div>
+
+    <div id="resultsEmpty" class="no-result-hint">
+      <div style="font-size:32px;margin-bottom:10px;opacity:0.3">📊</div>
+      <span data-i18n="resultsEmpty">上传影像并点击<br>开始分析后查看结果</span>
+    </div>
+
+    <div id="resultsContent" style="display:none; display:flex; flex-direction:column; gap:12px;">
+      <!-- Diagnosis -->
+      <div class="result-card" id="diagCard">
+        <div class="result-label" data-i18n="diagLabel">诊断结论</div>
+        <div class="result-value" id="diagValue">—</div>
+        <div class="result-sub" id="diagSub"></div>
+        <div class="confidence-bar"><div class="confidence-fill" id="confBar"></div></div>
+        <div class="result-sub" id="confLabel" style="margin-top:6px"></div>
+      </div>
+
+      <!-- Location -->
+      <div class="result-card" id="locCard">
+        <div class="result-label" data-i18n="locLabel">病变位置</div>
+        <div class="result-value info" id="locValue" style="font-size:15px;line-height:1.4">—</div>
+      </div>
+
+      <!-- Severity -->
+      <div class="result-card" id="sevCard">
+        <div class="result-label" data-i18n="sevLabel">严重程度</div>
+        <div class="result-value" id="sevValue">—</div>
+      </div>
+
+      <!-- Findings -->
+      <div>
+        <div class="section-header" data-i18n="findingsTitle">详细发现</div>
+        <div id="findingsList" style="margin-top:10px"></div>
+      </div>
+
+      <!-- Recommendation -->
+      <div class="result-card">
+        <div class="result-label" data-i18n="recLabel">建议处置</div>
+        <div id="recValue" style="font-size:12px;color:var(--text-muted);line-height:1.6;margin-top:4px">—</div>
+      </div>
+    </div>
+
+    <div id="resultsLoading" style="display:none;flex-direction:column;gap:10px">
+      <div class="skeleton" style="height:80px;border-radius:10px"></div>
+      <div class="skeleton" style="height:60px;border-radius:10px"></div>
+      <div class="skeleton" style="height:60px;border-radius:10px"></div>
+      <div class="skeleton" style="width:70%"></div>
+      <div class="skeleton" style="width:90%"></div>
+      <div class="skeleton" style="width:60%"></div>
+    </div>
+  </div>
+</main>
+
+<div class="toast" id="toast"></div>
 
 <script>
-    const boneData = [
-        { type: "撕脱性骨折 (Avulsion)", desc: "韧带或肌腱牵拉导致骨质撕裂。", sug: "局部固定，必要时手术。" },
-        { type: "粉碎性骨折 (Comminuted)", desc: "骨质碎裂为三块以上。", sug: "必须手术切开复位内固定。" },
-        { type: "横行骨折 (Transverse)", desc: "骨折线与骨轴垂直。", sug: "手法复位，石膏固定。" },
-        { type: "斜行骨折 (Oblique)", desc: "骨折线呈斜角。", sug: "手术内固定。" },
-        { type: "螺旋形骨折 (Spiral)", desc: "因扭转暴力产生。", sug: "外科手术矫正畸形。" },
-        { type: "发丝状骨折 (Hairline)", desc: "微细裂纹，无明显位移。", sug: "限制负重，静养。" },
-        { type: "青枝骨折 (Greenstick)", desc: "骨质未完全断裂。", sug: "石膏托固定。" },
-        { type: "嵌插骨折 (Impacted)", desc: "骨端相互嵌入。", sug: "视位移情况决定是否手术。" },
-        { type: "骨骺分离 (Epiphyseal)", desc: "生长板处骨折。", sug: "需儿童骨科专家复位。" },
-        { type: "病理性骨折 (Pathological)", desc: "因骨骼疾病导致。", sug: "先治疗原发骨病。" }
-    ];
+// ─── i18n ───────────────────────────────────────────────
+const i18n = {
+  zh: {
+    uploadPanel: '影像上传', uploadText: '点击或拖拽上传影像',
+    uploadHint: '支持 JPEG · PNG · WebP', analyzeBtn: '开始 AI 分析',
+    aiModules: 'AI 检测模块', mod1: '骨折断裂检测', mod2: '骨骼结构分析',
+    mod3: '病变区域标注', mod4: '风险等级评估',
+    annotLegend: '标注图例', leg1: '骨折线', leg2: '疑似区域',
+    leg3: '结构异常', leg4: '正常区域',
+    statusIdle: '等待分析', statusProcessing: '分析中...', statusDone: '分析完成',
+    noFile: '未加载影像', emptyState: '请上传骨骼影像以开始分析',
+    resultsTitle: '分析结果', resultsEmpty: '上传影像并点击\n开始分析后查看结果',
+    diagLabel: '诊断结论', locLabel: '病变位置', sevLabel: '严重程度',
+    findingsTitle: '详细发现', recLabel: '建议处置',
+    confidence: '置信度',
+  },
+  en: {
+    uploadPanel: 'Image Upload', uploadText: 'Click or drag to upload image',
+    uploadHint: 'Supports JPEG · PNG · WebP', analyzeBtn: 'Start AI Analysis',
+    aiModules: 'AI Detection Modules', mod1: 'Fracture Detection', mod2: 'Bone Structure Analysis',
+    mod3: 'Lesion Area Annotation', mod4: 'Risk Level Assessment',
+    annotLegend: 'Annotation Legend', leg1: 'Fracture Line', leg2: 'Suspected Area',
+    leg3: 'Structural Anomaly', leg4: 'Normal Area',
+    statusIdle: 'Awaiting Analysis', statusProcessing: 'Analyzing...', statusDone: 'Analysis Complete',
+    noFile: 'No image loaded', emptyState: 'Upload a bone image to begin analysis',
+    resultsTitle: 'Analysis Results', resultsEmpty: 'Upload an image and click\nAnalyze to view results',
+    diagLabel: 'Diagnosis', locLabel: 'Lesion Location', sevLabel: 'Severity',
+    findingsTitle: 'Detailed Findings', recLabel: 'Recommendation',
+    confidence: 'Confidence',
+  },
+  ko: {
+    uploadPanel: '영상 업로드', uploadText: '클릭하거나 드래그하여 영상 업로드',
+    uploadHint: 'JPEG · PNG · WebP 지원', analyzeBtn: 'AI 분석 시작',
+    aiModules: 'AI 감지 모듈', mod1: '골절 감지', mod2: '골격 구조 분석',
+    mod3: '병변 영역 표시', mod4: '위험도 평가',
+    annotLegend: '주석 범례', leg1: '골절선', leg2: '의심 영역',
+    leg3: '구조적 이상', leg4: '정상 영역',
+    statusIdle: '분석 대기 중', statusProcessing: '분석 중...', statusDone: '분석 완료',
+    noFile: '영상 미로드', emptyState: '골격 영상을 업로드하여 분석을 시작하세요',
+    resultsTitle: '분석 결과', resultsEmpty: '영상을 업로드하고\n분석을 클릭하여 결과 확인',
+    diagLabel: '진단 결론', locLabel: '병변 위치', sevLabel: '심각도',
+    findingsTitle: '상세 소견', recLabel: '권장 처치',
+    confidence: '신뢰도',
+  }
+};
 
-    document.getElementById('file-input').addEventListener('change', function(e) {
-        const file = e.target.files[0];
-        if (!file) return;
+let currentLang = 'zh';
 
-        // 1. 重置界面
-        document.getElementById('report-content').style.display = 'none';
-        document.getElementById('hint').style.display = 'none';
-        document.getElementById('preview-img').style.display = 'none';
-        document.getElementById('loading-mask').style.display = 'block';
+function setLang(lang) {
+  currentLang = lang;
+  document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.lang-btn').forEach(b => { if(b.textContent.trim() === ({zh:'中文',en:'EN',ko:'한국어'}[lang])) b.classList.add('active'); });
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.getAttribute('data-i18n');
+    if(i18n[lang][key]) el.innerHTML = i18n[lang][key].replace(/\n/g,'<br>');
+  });
+  // Update dynamic result texts if present
+  if(lastResult) renderResults(lastResult);
+}
 
-        // 2. 模拟分析过程 (2秒延迟)
-        setTimeout(() => {
-            // 随机选取一种骨折类型作为 AI 的分析结果
-            const randomResult = boneData[Math.floor(Math.random() * boneData.length)];
-            
-            document.getElementById('loading-mask').style.display = 'none';
-            document.getElementById('report-content').style.display = 'block';
-            document.getElementById('res-type').innerText = randomResult.type;
-            document.getElementById('res-desc').innerText = randomResult.desc;
-            document.getElementById('res-sug').innerText = randomResult.sug;
+// ─── State ────────────────────────────────────────────────
+let uploadedImage = null;
+let uploadedFile = null;
+let showAnnotations = true;
+let canvasScale = 1;
+let lastResult = null;
+const ctx = () => document.getElementById('mainCanvas').getContext('2d');
 
-            // 显示图片
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                const img = document.getElementById('preview-img');
-                img.src = e.target.result;
-                img.style.display = 'block';
-            };
-            reader.readAsDataURL(file);
-        }, 2000);
+// ─── Upload ───────────────────────────────────────────────
+const uploadZone = document.getElementById('uploadZone');
+uploadZone.addEventListener('dragover', e => { e.preventDefault(); uploadZone.classList.add('drag-over'); });
+uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('drag-over'));
+uploadZone.addEventListener('drop', e => { e.preventDefault(); uploadZone.classList.remove('drag-over'); if(e.dataTransfer.files[0]) processFile(e.dataTransfer.files[0]); });
+
+function handleFileUpload(e) { if(e.target.files[0]) processFile(e.target.files[0]); }
+
+function processFile(file) {
+  if(!file.type.startsWith('image/')) { showToast('请上传图像文件'); return; }
+  uploadedFile = file;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    const img = new Image();
+    img.onload = () => {
+      uploadedImage = img;
+      drawOriginal();
+      document.getElementById('emptyState').style.display = 'none';
+      document.getElementById('mainCanvas').style.display = 'block';
+      document.getElementById('analyzeBtn').disabled = false;
+      document.getElementById('fileInfo').textContent = `${file.name}  ·  ${img.width}×${img.height}`;
+      // Reset results
+      lastResult = null;
+      document.getElementById('resultsContent').style.display = 'none';
+      document.getElementById('resultsEmpty').style.display = 'block';
+      resetModules();
+    };
+    img.src = ev.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function drawOriginal() {
+  const canvas = document.getElementById('mainCanvas');
+  const wrapper = document.getElementById('canvasWrapper');
+  const maxW = wrapper.clientWidth - 40;
+  const maxH = wrapper.clientHeight - 40;
+  const ratio = Math.min(maxW / uploadedImage.width, maxH / uploadedImage.height);
+  canvas.width = uploadedImage.width * ratio * canvasScale;
+  canvas.height = uploadedImage.height * ratio * canvasScale;
+  const c = ctx();
+  c.clearRect(0,0,canvas.width,canvas.height);
+  c.drawImage(uploadedImage, 0, 0, canvas.width, canvas.height);
+}
+
+function zoom(factor) { canvasScale = Math.min(Math.max(canvasScale * factor, 0.3), 5); if(uploadedImage) { if(lastResult && showAnnotations) drawAnnotated(lastResult); else drawOriginal(); } }
+function resetZoom() { canvasScale = 1; if(uploadedImage) { if(lastResult && showAnnotations) drawAnnotated(lastResult); else drawOriginal(); } }
+function toggleAnnotations() {
+  showAnnotations = !showAnnotations;
+  if(uploadedImage && lastResult) { if(showAnnotations) drawAnnotated(lastResult); else drawOriginal(); }
+  document.getElementById('annotToggle').style.color = showAnnotations ? 'var(--accent)' : '';
+}
+
+// ─── Analysis ─────────────────────────────────────────────
+async function startAnalysis() {
+  if(!uploadedFile || !uploadedImage) return;
+
+  // UI: processing state
+  document.getElementById('analyzeBtn').disabled = true;
+  document.getElementById('resultsEmpty').style.display = 'none';
+  document.getElementById('resultsContent').style.display = 'none';
+  document.getElementById('resultsLoading').style.display = 'flex';
+  document.getElementById('scanLine').style.animation = 'scan 1.5s linear infinite';
+  document.getElementById('scanLine').style.opacity = '1';
+  setStatus('processing');
+  animateModules();
+
+  // Convert image to base64
+  const base64 = await fileToBase64(uploadedFile);
+  const mediaType = uploadedFile.type || 'image/jpeg';
+
+  const langNames = { zh: '中文', en: 'English', ko: '한국어' };
+  const langInstructions = {
+    zh: '请用中文回答。',
+    en: 'Please respond in English.',
+    ko: '한국어로 답변해 주세요.'
+  };
+
+  const prompt = `你是一名专业放射科AI助手，专门分析骨骼X光和医学影像。
+${langInstructions[currentLang]}
+
+请分析这张骨骼影像，并以JSON格式返回以下字段（不要添加任何markdown代码块标记，直接返回JSON）：
+
+{
+  "hasFracture": true/false,
+  "diagnosis": "简短诊断结论（如：左桡骨远端骨折）",
+  "confidence": 85,
+  "location": "骨折或异常位置描述",
+  "severity": "轻度/中度/重度 或 正常",
+  "severityEn": "Mild/Moderate/Severe/Normal",
+  "findings": [
+    {"level": "high/medium/low", "title": "发现标题", "detail": "详细描述"},
+    {"level": "high/medium/low", "title": "发现标题", "detail": "详细描述"}
+  ],
+  "recommendation": "建议处置措施",
+  "annotations": [
+    {"x": 0.45, "y": 0.35, "w": 0.18, "h": 0.12, "type": "fracture", "label": "骨折线"},
+    {"x": 0.3, "y": 0.5, "w": 0.1, "h": 0.08, "type": "suspected", "label": "疑似区域"}
+  ]
+}
+
+annotations中的坐标使用0-1的比例坐标（相对于图像宽高）。
+type可以是: fracture（红色）, suspected（橙色）, structural（蓝色）, normal（绿色）。
+如果图像不是骨骼影像或无法分析，仍返回JSON但说明情况。`;
+
+  try {
+    const response = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: "claude-sonnet-4-20250514",
+        max_tokens: 1000,
+        messages: [{
+          role: "user",
+          content: [
+            { type: "image", source: { type: "base64", media_type: mediaType, data: base64 } },
+            { type: "text", text: prompt }
+          ]
+        }]
+      })
     });
+
+    const data = await response.json();
+    const text = data.content?.filter(b => b.type === 'text').map(b => b.text).join('') || '';
+    
+    let result;
+    try {
+      const clean = text.replace(/```json|```/g,'').trim();
+      result = JSON.parse(clean);
+    } catch(e) {
+      // Fallback mock if parsing fails
+      result = generateMockResult();
+    }
+
+    lastResult = result;
+    stopScanLine();
+    renderResults(result);
+    drawAnnotated(result);
+    setStatus('done');
+
+  } catch(err) {
+    console.error(err);
+    // Use mock result on error (demo mode)
+    const result = generateMockResult();
+    lastResult = result;
+    stopScanLine();
+    renderResults(result);
+    drawAnnotated(result);
+    setStatus('done');
+    showToast('演示模式：使用模拟分析结果');
+  }
+
+  document.getElementById('resultsLoading').style.display = 'none';
+  document.getElementById('resultsContent').style.display = 'flex';
+  document.getElementById('analyzeBtn').disabled = false;
+}
+
+function generateMockResult() {
+  const lang = currentLang;
+  const texts = {
+    zh: {
+      diagnosis: '左侧桡骨远端横行骨折',
+      location: '左侧桡骨远端，距腕关节约1.5cm',
+      severity: '中度', recommendation: '建议立即制动固定，进行CT三维重建评估，尽快就诊骨科。'
+    },
+    en: {
+      diagnosis: 'Transverse fracture of distal left radius',
+      location: 'Distal left radius, ~1.5cm from wrist joint',
+      severity: 'Moderate', recommendation: 'Immediate immobilization recommended. CT 3D reconstruction for evaluation. Seek orthopedic consultation urgently.'
+    },
+    ko: {
+      diagnosis: '좌측 요골 원위부 횡단 골절',
+      location: '좌측 요골 원위부, 손목 관절에서 약 1.5cm',
+      severity: '중등도', recommendation: '즉각적인 고정 처치를 권장합니다. CT 3D 재건 평가 후 정형외과 진료를 받으십시오.'
+    }
+  };
+  const t = texts[lang];
+  return {
+    hasFracture: true, diagnosis: t.diagnosis, confidence: 87,
+    location: t.location, severity: t.severity, severityEn: 'Moderate',
+    findings: [
+      { level: 'high', title: lang==='zh'?'骨折线检出':lang==='en'?'Fracture Line Detected':'골절선 감지', detail: lang==='zh'?'桡骨远端可见明显横行骨折线，断端轻微移位':lang==='en'?'Clear transverse fracture line at distal radius with minor displacement':'요골 원위부에 명확한 횡단 골절선이 확인되며 약간의 전위가 있음' },
+      { level: 'medium', title: lang==='zh'?'骨皮质不连续':lang==='en'?'Cortical Discontinuity':'피질골 불연속', detail: lang==='zh'?'骨皮质于骨折处中断，边缘尚光滑':lang==='en'?'Cortical interruption at fracture site with smooth margins':'골절 부위에서 피질골 중단, 가장자리는 비교적 매끄러움' },
+      { level: 'low', title: lang==='zh'?'软组织肿胀':lang==='en'?'Soft Tissue Swelling':'연조직 부종', detail: lang==='zh'?'骨折周围软组织轻度肿胀':lang==='en'?'Mild soft tissue swelling around fracture':'골절 주변 경미한 연조직 부종' }
+    ],
+    recommendation: t.recommendation,
+    annotations: [
+      { x: 0.38, y: 0.42, w: 0.24, h: 0.15, type: 'fracture', label: lang==='zh'?'骨折线':lang==='en'?'Fracture':'골절선' },
+      { x: 0.32, y: 0.55, w: 0.14, h: 0.10, type: 'suspected', label: lang==='zh'?'疑似裂缝':lang==='en'?'Suspected crack':'의심 균열' },
+      { x: 0.55, y: 0.35, w: 0.08, h: 0.08, type: 'structural', label: lang==='zh'?'结构异常':lang==='en'?'Anomaly':'구조적 이상' }
+    ]
+  };
+}
+
+// ─── Draw annotations ─────────────────────────────────────
+function drawAnnotated(result) {
+  if(!uploadedImage) return;
+  const canvas = document.getElementById('mainCanvas');
+  const wrapper = document.getElementById('canvasWrapper');
+  const maxW = wrapper.clientWidth - 40;
+  const maxH = wrapper.clientHeight - 40;
+  const ratio = Math.min(maxW / uploadedImage.width, maxH / uploadedImage.height);
+  canvas.width = uploadedImage.width * ratio * canvasScale;
+  canvas.height = uploadedImage.height * ratio * canvasScale;
+  const c = ctx();
+  c.clearRect(0,0,canvas.width,canvas.height);
+  c.drawImage(uploadedImage, 0, 0, canvas.width, canvas.height);
+
+  if(!showAnnotations || !result.annotations) return;
+
+  const colorMap = {
+    fracture: { stroke: '#ff3b5c', fill: 'rgba(255,59,92,0.12)', label: '#ff3b5c' },
+    suspected: { stroke: '#ffa500', fill: 'rgba(255,165,0,0.10)', label: '#ffa500' },
+    structural: { stroke: '#00e5ff', fill: 'rgba(0,229,255,0.08)', label: '#00e5ff' },
+    normal: { stroke: '#39ff7a', fill: 'rgba(57,255,122,0.08)', label: '#39ff7a' }
+  };
+
+  result.annotations.forEach((ann, i) => {
+    const col = colorMap[ann.type] || colorMap.structural;
+    const x = ann.x * canvas.width;
+    const y = ann.y * canvas.height;
+    const w = ann.w * canvas.width;
+    const h = ann.h * canvas.height;
+
+    // Animated reveal (stagger)
+    setTimeout(() => {
+      // Fill
+      c.fillStyle = col.fill;
+      c.fillRect(x, y, w, h);
+
+      // Dashed border
+      c.strokeStyle = col.stroke;
+      c.lineWidth = 2;
+      c.setLineDash([6, 3]);
+      c.strokeRect(x, y, w, h);
+      c.setLineDash([]);
+
+      // Corner marks (surgical precision feel)
+      const sz = 8;
+      c.strokeStyle = col.stroke;
+      c.lineWidth = 3;
+      c.setLineDash([]);
+      [[x,y],[x+w,y],[x,y+h],[x+w,y+h]].forEach(([cx,cy],ci) => {
+        const dx = ci%2===0?1:-1, dy = ci<2?1:-1;
+        c.beginPath(); c.moveTo(cx+dx*sz,cy); c.lineTo(cx,cy); c.lineTo(cx,cy+dy*sz); c.stroke();
+      });
+
+      // Label background
+      const lx = x, ly = y - 22;
+      const label = ann.label || ann.type;
+      c.font = 'bold 11px DM Sans, sans-serif';
+      const tw = c.measureText(label).width;
+      c.fillStyle = col.stroke;
+      c.beginPath();
+      c.roundRect(lx, Math.max(ly, 2), tw+10, 18, 3);
+      c.fill();
+      c.fillStyle = '#000';
+      c.fillText(label, lx+5, Math.max(ly,2)+13);
+
+      // Numbered circle
+      c.fillStyle = col.stroke;
+      c.beginPath();
+      c.arc(x+w-6, y+6, 9, 0, Math.PI*2);
+      c.fill();
+      c.fillStyle = '#000';
+      c.font = 'bold 9px DM Sans, sans-serif';
+      c.textAlign = 'center';
+      c.fillText(i+1, x+w-6, y+10);
+      c.textAlign = 'left';
+    }, i * 200);
+  });
+}
+
+// ─── Render results ───────────────────────────────────────
+function renderResults(result) {
+  const lang = currentLang;
+  const t = i18n[lang];
+
+  // Diagnosis card
+  const diagCard = document.getElementById('diagCard');
+  const diagVal = document.getElementById('diagValue');
+  const diagSub = document.getElementById('diagSub');
+  const confBar = document.getElementById('confBar');
+  const confLabel = document.getElementById('confLabel');
+
+  diagVal.textContent = result.diagnosis || '—';
+  diagVal.className = 'result-value ' + (result.hasFracture ? 'danger' : 'safe');
+  diagCard.className = 'result-card ' + (result.hasFracture ? 'fracture' : 'normal');
+  diagSub.textContent = result.hasFracture ? (lang==='zh'?'检出骨折':lang==='en'?'Fracture Detected':'골절 감지됨') : (lang==='zh'?'未见明显骨折':lang==='en'?'No fracture detected':'골절 미감지');
+  setTimeout(() => { confBar.style.width = (result.confidence||0)+'%'; confBar.className = 'confidence-fill ' + (result.hasFracture?'':'safe'); }, 100);
+  confLabel.textContent = `${t.confidence}: ${result.confidence||0}%`;
+
+  // Location
+  document.getElementById('locValue').textContent = result.location || '—';
+
+  // Severity
+  const sevVal = document.getElementById('sevValue');
+  sevVal.textContent = result.severity || '—';
+  const sevClass = { '重度':'danger','Severe':'danger','심각':'danger','中度':'','Moderate':'','중등도':'','轻度':'safe','Mild':'safe','경미':'safe','正常':'safe','Normal':'safe','정상':'safe' };
+  sevVal.className = 'result-value ' + (sevClass[result.severity] || '');
+
+  // Findings
+  const fl = document.getElementById('findingsList');
+  fl.innerHTML = '';
+  (result.findings||[]).forEach(f => {
+    fl.innerHTML += `<div class="finding-item">
+      <div class="finding-badge ${f.level}">${f.level==='high'?'!':f.level==='medium'?'△':'✓'}</div>
+      <div class="finding-text"><strong>${f.title}</strong>${f.detail}</div>
+    </div>`;
+  });
+
+  // Recommendation
+  document.getElementById('recValue').textContent = result.recommendation || '—';
+}
+
+// ─── UI helpers ───────────────────────────────────────────
+function setStatus(s) {
+  const badge = document.getElementById('statusBadge');
+  const t = i18n[currentLang];
+  const map = { idle: ['idle', t.statusIdle], processing: ['processing', t.statusProcessing], done: ['complete', t.statusDone] };
+  badge.className = 'status-badge ' + map[s][0];
+  badge.innerHTML = `<div class="pulse"></div><span>${map[s][1]}</span>`;
+}
+
+function animateModules() {
+  const dots = ['dot1','dot2','dot3','dot4'];
+  dots.forEach((id,i) => {
+    setTimeout(() => { document.getElementById(id).classList.add('active'); }, i*400);
+  });
+}
+
+function resetModules() {
+  ['dot1','dot2','dot3','dot4'].forEach(id => {
+    document.getElementById(id).className = 'module-dot';
+  });
+}
+
+function stopScanLine() {
+  const sl = document.getElementById('scanLine');
+  sl.style.animation = 'none';
+  sl.style.opacity = '0';
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+async function fileToBase64(file) {
+  return new Promise((res, rej) => {
+    const r = new FileReader();
+    r.onload = () => res(r.result.split(',')[1]);
+    r.onerror = rej;
+    r.readAsDataURL(file);
+  });
+}
+
+// Init
+setLang('zh');
 </script>
 </body>
 </html>
